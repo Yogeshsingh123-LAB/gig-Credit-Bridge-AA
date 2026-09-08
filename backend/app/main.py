@@ -20,13 +20,35 @@ from app.core.logging import logger
 from app.api.v1.router import api_v1_router
 from app.db.session import engine, SessionLocal
 from app.db.base import Base
+import app.models
 from app.services.admin_service import seed_demo_accounts
+
+def ensure_schema_upgrades():
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            for tbl, col, col_type in [
+                ("lender_profiles", "organization_id", "VARCHAR(36)"),
+                ("lender_profiles", "status", "VARCHAR(50) DEFAULT 'ACTIVE'"),
+                ("lender_profiles", "last_login_at", "TIMESTAMP"),
+                ("audit_logs", "actor_role", "VARCHAR(50)"),
+                ("audit_logs", "result", "VARCHAR(50) DEFAULT 'SUCCESS'"),
+                ("users", "is_demo", "BOOLEAN DEFAULT 0"),
+            ]:
+                try:
+                    conn.execute(text(f"ALTER TABLE {tbl} ADD COLUMN {col} {col_type}"))
+                    conn.commit()
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create database tables and seed demo accounts if they do not exist
     try:
         Base.metadata.create_all(bind=engine)
+        ensure_schema_upgrades()
         db = SessionLocal()
         try:
             seed_demo_accounts(db)
@@ -34,6 +56,7 @@ async def lifespan(app: FastAPI):
             db.close()
     except Exception as e:
         logger.warning(f"Database auto-creation/seeding error: {e}")
+
 
     logger.info(f"Starting {settings.APP_NAME} in environment: {settings.APP_ENV}")
     yield

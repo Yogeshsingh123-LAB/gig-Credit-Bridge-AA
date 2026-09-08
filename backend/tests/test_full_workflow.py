@@ -127,4 +127,4 @@ def test_full_credbridge_workflow():
 
     admin_dash = client.get("/api/v1/admin/dashboard", headers=a_headers)
     assert admin_dash.status_code == 200
-    assert admin_dash.json()["workers_count"] >= 1
+    assert admin_dash.json()["total_workers"] >= 1

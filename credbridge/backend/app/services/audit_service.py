@@ -10,7 +10,9 @@ def log_audit_action(
     entity_type: Optional[str] = None,
     entity_id: Optional[str] = None,
     details: Optional[Dict[str, Any]] = None,
-    ip_address: Optional[str] = None
+    ip_address: Optional[str] = None,
+    actor_role: Optional[str] = None,
+    result: Optional[str] = "SUCCESS"
 ) -> AuditLog:
     """
     Persists audit log records for security and compliance tracking.
@@ -21,6 +23,8 @@ def log_audit_action(
         action=action,
         entity_type=entity_type,
         entity_id=entity_id,
+        actor_role=actor_role,
+        result=result,
         details=details,
         ip_address=ip_address
     )

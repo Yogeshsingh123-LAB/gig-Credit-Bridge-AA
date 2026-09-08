@@ -55,7 +55,7 @@ def require_worker(current_user: User = Depends(get_current_user), db: Session =
     return profile
 
 def require_lender(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> LenderProfile:
-    if current_user.role != UserRole.LENDER:
+    if current_user.role not in [UserRole.LENDER, UserRole.LENDER_ADMIN, UserRole.LENDER_OFFICER]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden: This endpoint is restricted to LENDER accounts."
@@ -69,9 +69,52 @@ def require_lender(current_user: User = Depends(get_current_user), db: Session =
     return profile
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role not in [UserRole.ADMIN, UserRole.PLATFORM_ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Forbidden: This endpoint is restricted to ADMIN accounts."
         )
     return current_user
+
+def require_platform_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [UserRole.ADMIN, UserRole.PLATFORM_ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This endpoint is restricted to Platform Admin accounts."
+        )
+    return current_user
+
+def require_lender_any(
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+) -> tuple[User, LenderProfile]:
+    if current_user.role not in [UserRole.LENDER, UserRole.LENDER_ADMIN, UserRole.LENDER_OFFICER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This endpoint is restricted to Lender accounts."
+        )
+    profile = db.query(LenderProfile).filter(LenderProfile.user_id == current_user.id).first()
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lender profile associated with this account was not found."
+        )
+    return current_user, profile
+
+def require_lender_admin(
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+) -> tuple[User, LenderProfile]:
+    if current_user.role not in [UserRole.LENDER_ADMIN, UserRole.LENDER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This action requires Lender Admin role."
+        )
+    profile = db.query(LenderProfile).filter(LenderProfile.user_id == current_user.id).first()
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lender profile associated with this account was not found."
+        )
+    return current_user, profile
+

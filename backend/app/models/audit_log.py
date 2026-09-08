@@ -21,6 +21,8 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(100), nullable=False)
     entity_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     entity_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    actor_role: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    result: Mapped[str | None] = mapped_column(String(50), default="SUCCESS", nullable=True)
     details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

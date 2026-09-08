@@ -21,6 +21,14 @@ class LenderProfile(Base):
     )
     organization_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
     designation: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(
+        String(36), 
+        ForeignKey("lender_organizations.id", ondelete="SET NULL"), 
+        nullable=True, 
+        index=True
+    )
+    status: Mapped[str] = mapped_column(String(50), default="ACTIVE", nullable=False)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
@@ -33,5 +41,10 @@ class LenderProfile(Base):
         nullable=False
     )
 
-    # Relationship
+    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="lender_profile")
+    organization: Mapped["LenderOrganization | None"] = relationship(
+        "LenderOrganization", 
+        back_populates="members"
+    )
+

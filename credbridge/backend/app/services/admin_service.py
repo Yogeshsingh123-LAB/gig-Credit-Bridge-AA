@@ -11,21 +11,141 @@ from app.core.security import hash_password
 
 def seed_demo_accounts(db: Session):
     """
-    Seeds default development/demo accounts (Worker, Lender, Admin) atomically.
+    Seeds default development/demo accounts (Platform Admin, Demo Finance, Demo Capital, Worker) atomically.
     """
-    # 1. Admin Seed
-    admin = db.query(User).filter(User.email == "admin@credbridge.com").first()
-    if not admin:
-        admin = User(
-            name="CredBridge Admin",
-            email="admin@credbridge.com",
-            password_hash=hash_password("Admin@123456"),
-            role=UserRole.ADMIN,
-            is_active=True
-        )
-        db.add(admin)
+    from app.models.lender_organization import LenderOrganization
 
-    # 2. Worker Seed
+    # 1. Admin Seed
+    for admin_email, admin_name in [
+        ("admin@demo.credbridge.local", "System Administrator"),
+        ("admin@credbridge.com", "CredBridge Admin")
+    ]:
+        admin = db.query(User).filter(User.email == admin_email).first()
+        if not admin:
+            admin = User(
+                name=admin_name,
+                email=admin_email,
+                password_hash=hash_password("Admin@123456"),
+                role=UserRole.PLATFORM_ADMIN,
+                is_active=True,
+                is_demo=True
+            )
+            db.add(admin)
+        else:
+            admin.role = UserRole.PLATFORM_ADMIN
+            admin.is_active = True
+
+    # 2. Demo Finance Ltd. (LND-00124)
+    org_finance = db.query(LenderOrganization).filter(LenderOrganization.lender_id == "LND-00124").first()
+    if not org_finance:
+        org_finance = LenderOrganization(
+            lender_id="LND-00124",
+            organization_name="Demo Finance Ltd.",
+            contact_email="contact@demo-finance.local",
+            status="ACTIVE",
+            is_demo=True
+        )
+        db.add(org_finance)
+        db.flush()
+
+    finance_users = [
+        {
+            "name": "Demo Finance Admin",
+            "email": "lender-admin@demo-finance.local",
+            "role": UserRole.LENDER_ADMIN,
+            "designation": "Senior Risk Director"
+        },
+        {
+            "name": "Demo Finance Officer",
+            "email": "officer@demo-finance.local",
+            "role": UserRole.LENDER_OFFICER,
+            "designation": "Credit Assessment Officer"
+        }
+    ]
+    for u_def in finance_users:
+        u = db.query(User).filter(User.email == u_def["email"]).first()
+        if not u:
+            u = User(
+                name=u_def["name"],
+                email=u_def["email"],
+                password_hash=hash_password("Password123!"),
+                role=u_def["role"],
+                is_active=True,
+                is_demo=True
+            )
+            db.add(u)
+            db.flush()
+            lp = LenderProfile(
+                user_id=u.id,
+                organization_id=org_finance.id,
+                organization_name=org_finance.organization_name,
+                designation=u_def["designation"],
+                status="ACTIVE"
+            )
+            db.add(lp)
+        else:
+            u.role = u_def["role"]
+            u.is_active = True
+            if u.lender_profile:
+                u.lender_profile.organization_id = org_finance.id
+                u.lender_profile.organization_name = org_finance.organization_name
+
+    # 3. Demo Capital Partners (LND-00125)
+    org_capital = db.query(LenderOrganization).filter(LenderOrganization.lender_id == "LND-00125").first()
+    if not org_capital:
+        org_capital = LenderOrganization(
+            lender_id="LND-00125",
+            organization_name="Demo Capital Partners",
+            contact_email="contact@demo-capital.local",
+            status="ACTIVE",
+            is_demo=True
+        )
+        db.add(org_capital)
+        db.flush()
+
+    capital_users = [
+        {
+            "name": "Demo Capital Admin",
+            "email": "lender-admin@demo-capital.local",
+            "role": UserRole.LENDER_ADMIN,
+            "designation": "VP Credit Operations"
+        },
+        {
+            "name": "Demo Capital Officer",
+            "email": "officer@demo-capital.local",
+            "role": UserRole.LENDER_OFFICER,
+            "designation": "Underwriting Officer"
+        }
+    ]
+    for u_def in capital_users:
+        u = db.query(User).filter(User.email == u_def["email"]).first()
+        if not u:
+            u = User(
+                name=u_def["name"],
+                email=u_def["email"],
+                password_hash=hash_password("Password123!"),
+                role=u_def["role"],
+                is_active=True,
+                is_demo=True
+            )
+            db.add(u)
+            db.flush()
+            lp = LenderProfile(
+                user_id=u.id,
+                organization_id=org_capital.id,
+                organization_name=org_capital.organization_name,
+                designation=u_def["designation"],
+                status="ACTIVE"
+            )
+            db.add(lp)
+        else:
+            u.role = u_def["role"]
+            u.is_active = True
+            if u.lender_profile:
+                u.lender_profile.organization_id = org_capital.id
+                u.lender_profile.organization_name = org_capital.organization_name
+
+    # 4. Worker Seed
     worker_user = db.query(User).filter(User.email == "ravi.worker@example.com").first()
     if not worker_user:
         worker_user = User(
@@ -48,33 +168,34 @@ def seed_demo_accounts(db: Session):
         db.add(wp)
         db.flush()
 
-        # Seed initial demo financial transactions for Ravi Kumar
         try:
             from app.services.platform_service import generate_demo_financial_data
             generate_demo_financial_data(db, wp.id, months=6)
         except Exception:
             pass
 
-    # 3. Lender Seed
+    # 5. Legacy Lender Seed
     lender_user = db.query(User).filter(User.email == "priya.lender@example.com").first()
     if not lender_user:
         lender_user = User(
             name="Priya Sharma",
             email="priya.lender@example.com",
             password_hash=hash_password("Password123!"),
-            role=UserRole.LENDER,
+            role=UserRole.LENDER_ADMIN,
             is_active=True
         )
         db.add(lender_user)
         db.flush()
         lp = LenderProfile(
             user_id=lender_user.id,
-            organization_name="Acme Microfinance Capital",
+            organization_id=org_finance.id,
+            organization_name="Demo Finance Ltd.",
             designation="Senior Credit Assessor"
         )
         db.add(lp)
 
     db.commit()
+
 
 def seed_admin_account(db: Session) -> User:
     seed_demo_accounts(db)

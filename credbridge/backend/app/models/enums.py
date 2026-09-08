@@ -4,6 +4,9 @@ class UserRole(str, Enum):
     WORKER = "WORKER"
     LENDER = "LENDER"
     ADMIN = "ADMIN"
+    PLATFORM_ADMIN = "PLATFORM_ADMIN"
+    LENDER_ADMIN = "LENDER_ADMIN"
+    LENDER_OFFICER = "LENDER_OFFICER"
 
 class PlatformStatus(str, Enum):
     CONNECTED = "CONNECTED"

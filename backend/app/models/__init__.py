@@ -20,6 +20,8 @@ from app.models.aa_consent import AAConsent
 from app.models.transaction_classification import TransactionClassification
 from app.models.income_report import IncomeReport
 from app.models.report_share import ReportShare
+from app.models.lender_organization import LenderOrganization
+from app.models.report_verification import ReportVerification
 
 __all__ = [
     "UserRole",
@@ -49,4 +51,6 @@ __all__ = [
     "TransactionClassification",
     "IncomeReport",
     "ReportShare",
+    "LenderOrganization",
+    "ReportVerification",
 ]

@@ -61,7 +61,7 @@ def require_lender(current_user: User = Depends(get_current_user)) -> User:
     """
     Role authorization dependency allowing access only to LENDER role users.
     """
-    if current_user.role != UserRole.LENDER:
+    if current_user.role not in [UserRole.LENDER, UserRole.LENDER_ADMIN, UserRole.LENDER_OFFICER]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to access this resource. Lender role required."
@@ -72,9 +72,34 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """
     Role authorization dependency allowing access only to ADMIN role users.
     """
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role not in [UserRole.ADMIN, UserRole.PLATFORM_ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to access this resource. Admin role required."
         )
     return current_user
+
+def require_platform_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [UserRole.ADMIN, UserRole.PLATFORM_ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This endpoint is restricted to Platform Admin accounts."
+        )
+    return current_user
+
+def require_lender_any(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [UserRole.LENDER, UserRole.LENDER_ADMIN, UserRole.LENDER_OFFICER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This endpoint is restricted to Lender accounts."
+        )
+    return current_user
+
+def require_lender_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [UserRole.LENDER_ADMIN, UserRole.LENDER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: This action requires Lender Admin role."
+        )
+    return current_user
+

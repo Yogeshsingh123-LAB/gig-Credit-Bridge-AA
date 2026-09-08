@@ -4,7 +4,7 @@ from app.models.enums import UserRole
 
 class RegisterRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Full name of user")
-    email: EmailStr = Field(..., description="Valid email address")
+    email: str = Field(..., min_length=3, max_length=255, description="Valid email address")
     password: str = Field(..., min_length=8, description="Minimum 8 characters password")
     role: UserRole = Field(default=UserRole.WORKER, description="Account role: WORKER or LENDER")
 
@@ -12,25 +12,31 @@ class RegisterRequest(BaseModel):
     @classmethod
     def normalize_email(cls, v: str) -> str:
         if isinstance(v, str):
-            return v.strip().lower()
+            v = v.strip().lower()
+            if "@" not in v:
+                raise ValueError("Invalid email format.")
+            return v
         return v
 
     @field_validator("role")
     @classmethod
     def validate_public_role(cls, v: UserRole) -> UserRole:
-        if v == UserRole.ADMIN:
+        if v in [UserRole.ADMIN, UserRole.PLATFORM_ADMIN]:
             raise ValueError("Public registration for ADMIN role is strictly forbidden.")
         return v
 
 class LoginRequest(BaseModel):
-    email: EmailStr = Field(..., description="Registered email address")
+    email: str = Field(..., min_length=3, max_length=255, description="Registered email address")
     password: str = Field(..., min_length=1, description="Account password")
 
     @field_validator("email", mode="before")
     @classmethod
     def normalize_email(cls, v: str) -> str:
         if isinstance(v, str):
-            return v.strip().lower()
+            v = v.strip().lower()
+            if "@" not in v:
+                raise ValueError("Invalid email format.")
+            return v
         return v
 
 class TokenResponse(BaseModel):

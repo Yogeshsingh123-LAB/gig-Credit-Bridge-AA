@@ -9,8 +9,9 @@ from app.api.v1.verification import router as verification_router
 from app.api.v1.score import router as score_router
 from app.api.v1.passport import router as passport_router
 from app.api.v1.consent import router as consent_router
-from app.api.v1.lenders import router as lender_router
-from app.api.v1.admin import router as admin_router
+from app.api.v1.lenders import router as legacy_lender_router
+from app.api.v1.admin_portal import router as admin_portal_router
+from app.api.v1.lender_portal import router as lender_portal_router
 from app.api.v1.worker_flow import router as worker_flow_router
 
 api_v1_router = APIRouter()
@@ -25,6 +26,8 @@ api_v1_router.include_router(verification_router, prefix="/verification", tags=[
 api_v1_router.include_router(score_router, prefix="/score", tags=["Financial Readiness Score"])
 api_v1_router.include_router(passport_router, prefix="/passport", tags=["Credit Passport"])
 api_v1_router.include_router(consent_router, prefix="/consent", tags=["Consent Management"])
-api_v1_router.include_router(lender_router, prefix="/lenders", tags=["Lender Portal"])
-api_v1_router.include_router(admin_router, prefix="/admin", tags=["Admin Portal"])
+api_v1_router.include_router(legacy_lender_router, prefix="/lenders", tags=["Legacy Lender"])
+api_v1_router.include_router(lender_portal_router, tags=["Lender Portal"])
+api_v1_router.include_router(admin_portal_router, tags=["Platform Admin Portal"])
+
 api_v1_router.include_router(worker_flow_router, tags=["Worker Workflow & Verification"])

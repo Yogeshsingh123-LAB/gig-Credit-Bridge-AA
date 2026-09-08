@@ -8,18 +8,20 @@ import {
   ShieldCheck,
   Award,
   FileBadge,
-  Settings,
   LogOut,
   Building2,
-  Users
+  Users,
+  ShieldAlert
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 export interface SidebarProps {
-  role: 'worker' | 'lender';
+  role: 'worker' | 'lender' | 'admin';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const location = useLocation();
+  const { logout } = useAuth();
 
   const workerNav = [
     { label: 'Overview', path: '/worker', icon: LayoutDashboard },
@@ -38,7 +40,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     { label: 'Applicant Assessment', path: '/lender/applicant', icon: Users },
   ];
 
-  const items = role === 'worker' ? workerNav : lenderNav;
+  const adminNav = [
+    { label: 'Overview', path: '/admin', icon: ShieldAlert },
+    { label: 'Admin Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  ];
+
+  const items = role === 'worker' ? workerNav : role === 'lender' ? lenderNav : adminNav;
 
   return (
     <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col h-full hidden md:flex shrink-0">
@@ -77,13 +84,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ role }) => {
 
       {/* Footer / Logout */}
       <div className="p-3 border-t border-slate-800 space-y-1">
-        <Link
-          to="/login"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition text-left"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

@@ -2,13 +2,17 @@ import React from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { Table, Column } from '../../components/ui/Table';
+import { Table } from '../../components/ui/Table';
 import { EmptyState } from '../../components/common/EmptyState';
-import { Layers, LineChart, ShieldCheck, Wallet, ArrowUpRight } from 'lucide-react';
+import { Layers, LineChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const WorkerDashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const welcomeName = user?.name ? user.name : 'Worker';
 
   const overviewMetrics = [
     { title: 'Monthly Income', value: 'No data available', subtitle: 'Connect an income source' },
@@ -20,7 +24,7 @@ export const WorkerDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Welcome back"
+        title={`Welcome back, ${welcomeName}`}
         subtitle="Financial Overview & Platform Evidence Workspace"
         badge={<Badge variant="warning">Setup Pending</Badge>}
       />
@@ -53,7 +57,7 @@ export const WorkerDashboardPage: React.FC = () => {
               <LineChart className="w-10 h-10 text-slate-600" />
               <p className="text-xs font-semibold text-slate-400">Chart Placeholder</p>
               <p className="text-xs text-slate-500 max-w-xs">
-                No cashflow data to display. Connect your work accounts to render monthly analytics.
+                Your financial profile is not ready yet. Connect your income sources to start building analytics.
               </p>
             </div>
           </CardContent>

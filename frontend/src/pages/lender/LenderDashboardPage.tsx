@@ -5,8 +5,12 @@ import { Badge } from '../../components/ui/Badge';
 import { Table } from '../../components/ui/Table';
 import { Users, FileCheck2, Clock, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const LenderDashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const welcomeName = user?.name ? user.name : 'Assessor';
+
   const lenderMetrics = [
     { title: 'Total Applications', count: '0', icon: Users },
     { title: 'Applicants', count: '0', icon: FileCheck2 },
@@ -17,7 +21,7 @@ export const LenderDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Lender Dashboard"
+        title={`Welcome back, ${welcomeName}`}
         subtitle="Institutional portfolio metrics & gig worker applicant stream"
       />
 

@@ -1,17 +1,12 @@
-# pyrefly: ignore [missing-import]
 from fastapi import APIRouter
-from app.api.v1 import auth, workers, transactions, verification, analytics, passport, lenders
+from app.api.v1.health import router as health_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1 import workers, transactions, verification, analytics, passport, lenders
 
-api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router = APIRouter()
 
-@api_v1_router.get("/health", tags=["Health"])
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "credbridge-api"
-    }
-
-api_v1_router.include_router(auth.router)
+api_v1_router.include_router(health_router, tags=["Health"])
+api_v1_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 api_v1_router.include_router(workers.router)
 api_v1_router.include_router(transactions.router)
 api_v1_router.include_router(verification.router)

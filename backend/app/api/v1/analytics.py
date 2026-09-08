@@ -11,6 +11,11 @@ from app.services.analytics_service import get_worker_financial_summary
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
+@router.get("/")
+def analytics_index():
+    return {"module": "analytics", "status": "active"}
+
+
 @router.get(
     "/financial-summary",
     response_model=FinancialAnalyticsResult,

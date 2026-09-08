@@ -24,6 +24,11 @@ class WorkerProfile(Base):
     occupation: Mapped[str | None] = mapped_column(String(100), nullable=True)
     experience_months: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     profile_completion: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    identity_status: Mapped[str] = mapped_column(String(30), default="UNVERIFIED", nullable=False)
+    identity_source: Mapped[str | None] = mapped_column(String(50), nullable=True) # e.g. "DigiLocker"
+    identity_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    masked_aadhaar: Mapped[str | None] = mapped_column(String(20), nullable=True) # e.g. "XXXXXXXX4821"
+    identity_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 

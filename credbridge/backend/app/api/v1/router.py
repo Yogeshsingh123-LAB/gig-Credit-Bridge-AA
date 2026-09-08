@@ -11,6 +11,7 @@ from app.api.v1.passport import router as passport_router
 from app.api.v1.consent import router as consent_router
 from app.api.v1.lenders import router as lender_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.worker_flow import router as worker_flow_router
 
 api_v1_router = APIRouter()
 
@@ -26,3 +27,4 @@ api_v1_router.include_router(passport_router, prefix="/passport", tags=["Credit 
 api_v1_router.include_router(consent_router, prefix="/consent", tags=["Consent Management"])
 api_v1_router.include_router(lender_router, prefix="/lenders", tags=["Lender Portal"])
 api_v1_router.include_router(admin_router, prefix="/admin", tags=["Admin Portal"])
+api_v1_router.include_router(worker_flow_router, tags=["Worker Workflow & Verification"])

@@ -87,3 +87,33 @@ def recalculate_verification(
     latest = get_latest_verification(db, worker.id)
     declared = latest.declared_monthly_income if latest else 0.0
     return start_verification(req=StartVerificationSchema(declared_monthly_income=declared), worker=worker, db=db)
+
+
+class VerifyDocumentRequest(BaseModel):
+    report_id: str
+    canonical_hash: Optional[str] = None
+    tampered_test: Optional[bool] = False
+
+
+@router.get("/report/{report_id}", summary="Public Report Verification")
+def verify_report_by_id(report_id: str, hash: Optional[str] = None, db: Session = Depends(get_db)):
+    """
+    Cryptographic verification of a Verified Gig Income Report.
+    Validates digital signature, canonical hash, expiry, and revocation.
+    """
+    from app.services.worker_workflow_service import public_verify_report
+    return public_verify_report(db, report_id, submitted_hash=hash)
+
+
+@router.post("/verify-document", summary="Verify Document Integrity & Signature")
+def verify_document_integrity(req: VerifyDocumentRequest, db: Session = Depends(get_db)):
+    """
+    Verifies document integrity using report_id and optional hash.
+    Supports simulated tampering tests.
+    """
+    from app.services.worker_workflow_service import public_verify_report
+    submitted_hash = req.canonical_hash
+    if req.tampered_test:
+        submitted_hash = "0000000000000000000000000000000000000000000000000000000000000000"
+    return public_verify_report(db, req.report_id, submitted_hash=submitted_hash)
+

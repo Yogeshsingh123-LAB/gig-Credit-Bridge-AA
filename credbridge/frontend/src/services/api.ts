@@ -3,7 +3,9 @@ import {
   User, WorkerProfile, LenderProfile, GigPlatform, Transaction,
   FinancialAnalyticsSummary, IncomeVerification, FinancialReadinessScore,
   CreditPassport, ConsentRecord, LenderApplicantItem, SimulationResult,
-  AuditLog, HealthResponse
+  AuditLog, HealthResponse, DigiLockerStatus, AAConsentRecord, BankAccountItem,
+  AAPlatformItem, ProcessDataResponse, IncomeReportDetail, IncomeReportPdfPayload,
+  FinancialRecommendationItem, ReportShareRecord, DataAccessAuditItem
 } from '../types';
 
 let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
@@ -33,6 +35,18 @@ export const apiService = {
   // Auth
   login: async (email: string, password: string) => {
     const res = await apiClient.post('/api/v1/auth/login', { email, password });
+    return res.data;
+  },
+  loginWithDigiLocker: async (data?: {
+    masked_aadhaar?: string;
+    name?: string;
+    is_new_user?: boolean;
+    phone?: string;
+    city?: string;
+    occupation?: string;
+    experience_months?: number;
+  }) => {
+    const res = await apiClient.post('/api/v1/auth/digilocker', data || {});
     return res.data;
   },
   register: async (name: string, email: string, password: string, role: 'WORKER' | 'LENDER') => {
@@ -167,6 +181,147 @@ export const apiService = {
   // Health
   checkApiHealth: async (): Promise<HealthResponse> => {
     const res = await apiClient.get<HealthResponse>('/api/v1/health');
+    return res.data;
+  },
+
+  // DigiLocker Identity Flow
+  startDigiLocker: async () => {
+    const res = await apiClient.post('/api/v1/digilocker/start');
+    return res.data;
+  },
+  verifyDigiLocker: async (sessionId: string, verifiedName?: string) => {
+    const res = await apiClient.post('/api/v1/digilocker/verify', { session_id: sessionId, verified_name: verifiedName });
+    return res.data;
+  },
+  getDigiLockerStatus: async (): Promise<DigiLockerStatus> => {
+    const res = await apiClient.get<DigiLockerStatus>('/api/v1/digilocker/status');
+    return res.data;
+  },
+  confirmDigiLocker: async () => {
+    const res = await apiClient.post('/api/v1/digilocker/confirm');
+    return res.data;
+  },
+
+  // Account Aggregator (AA) Consent Flow
+  getAAConsents: async (): Promise<AAConsentRecord[]> => {
+    const res = await apiClient.get<AAConsentRecord[]>('/api/v1/aa/consents');
+    return res.data;
+  },
+  createAAConsent: async (data: {
+    purpose?: string;
+    data_types?: string[];
+    selected_accounts?: string[];
+    selected_sources?: string[];
+    start_date?: string;
+    end_date?: string;
+  }) => {
+    const res = await apiClient.post('/api/v1/aa/consents', data);
+    return res.data;
+  },
+  approveAAConsent: async (consentId: string) => {
+    const res = await apiClient.post(`/api/v1/aa/consents/${consentId}/approve`);
+    return res.data;
+  },
+  revokeAAConsent: async (consentId: string) => {
+    const res = await apiClient.post(`/api/v1/aa/consents/${consentId}/revoke`);
+    return res.data;
+  },
+
+  // Bank Accounts & Platforms
+  getBankAccounts: async (): Promise<BankAccountItem[]> => {
+    const res = await apiClient.get<BankAccountItem[]>('/api/v1/aa/bank-accounts');
+    return res.data;
+  },
+  selectBankAccounts: async (selectedAccountIds: string[]) => {
+    const res = await apiClient.post('/api/v1/aa/bank-accounts/select', {
+      selected_account_ids: selectedAccountIds
+    });
+    return res.data;
+  },
+  getAAPlatforms: async (): Promise<AAPlatformItem[]> => {
+    const res = await apiClient.get<AAPlatformItem[]>('/api/v1/aa/platforms');
+    return res.data;
+  },
+
+  // Processing & Reports
+  processReportData: async (data: {
+    account_ids?: string[];
+    platforms?: string[];
+    start_date?: string;
+    end_date?: string;
+  }): Promise<ProcessDataResponse> => {
+    const res = await apiClient.post<ProcessDataResponse>('/api/v1/reports/process', data);
+    return res.data;
+  },
+  generateIncomeReport: async (data: {
+    consent_id?: string;
+    account_ids?: string[];
+    platforms?: string[];
+    start_date?: string;
+    end_date?: string;
+  }): Promise<IncomeReportDetail> => {
+    const res = await apiClient.post<IncomeReportDetail>('/api/v1/reports/generate', data);
+    return res.data;
+  },
+  getIncomeReports: async (): Promise<IncomeReportDetail[]> => {
+    const res = await apiClient.get<IncomeReportDetail[]>('/api/v1/reports');
+    return res.data;
+  },
+  getIncomeReportDetail: async (reportId: string): Promise<IncomeReportDetail> => {
+    const res = await apiClient.get<IncomeReportDetail>(`/api/v1/reports/${reportId}`);
+    return res.data;
+  },
+  getIncomeReportPdfData: async (reportId: string): Promise<IncomeReportPdfPayload> => {
+    const res = await apiClient.get<IncomeReportPdfPayload>(`/api/v1/reports/${reportId}/pdf-data`);
+    return res.data;
+  },
+  revokeIncomeReport: async (reportId: string) => {
+    const res = await apiClient.post(`/api/v1/reports/${reportId}/revoke`);
+    return res.data;
+  },
+  verifyReportPublic: async (reportId: string, hash?: string) => {
+    const res = await apiClient.get(`/api/v1/verification/report/${reportId}`, {
+      params: hash ? { hash } : undefined
+    });
+    return res.data;
+  },
+  verifyDocumentIntegrity: async (reportId: string, canonicalHash?: string, tamperedTest: boolean = false) => {
+    const res = await apiClient.post('/api/v1/verification/verify-document', {
+      report_id: reportId,
+      canonical_hash: canonicalHash,
+      tampered_test: tamperedTest
+    });
+    return res.data;
+  },
+
+  // Financial Recommendations
+  getFinancialRecommendations: async (): Promise<FinancialRecommendationItem[]> => {
+    const res = await apiClient.get<FinancialRecommendationItem[]>('/api/v1/recommendations');
+    return res.data;
+  },
+
+  // Report Sharing with Explicit Consent
+  shareIncomeReport: async (reportId: string, data: {
+    recipient_name: string;
+    share_scope?: Record<string, boolean>;
+    include_raw_transactions?: boolean;
+    duration_days?: number;
+  }): Promise<ReportShareRecord> => {
+    const res = await apiClient.post<ReportShareRecord>(`/api/v1/reports/${reportId}/share`, data);
+    return res.data;
+  },
+  getReportShares: async (reportId: string): Promise<ReportShareRecord[]> => {
+    const res = await apiClient.get<ReportShareRecord[]>(`/api/v1/reports/${reportId}/shares`);
+    return res.data;
+  },
+  revokeReportShare: async (shareId: string) => {
+    const res = await apiClient.post(`/api/v1/reports/shares/${shareId}/revoke`);
+    return res.data;
+  },
+
+  // Data Access & Privacy Audit
+  getDataAccessAudit: async (): Promise<DataAccessAuditItem[]> => {
+    const res = await apiClient.get<DataAccessAuditItem[]>('/api/v1/audit/data-access');
     return res.data;
   }
 };

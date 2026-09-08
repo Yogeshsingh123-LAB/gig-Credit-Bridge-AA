@@ -1,6 +1,7 @@
 from app.models.enums import (
     UserRole, PlatformStatus, TransactionType, TransactionCategory, 
-    VerificationStatus, ConsentStatus, PassportStatus
+    VerificationStatus, ConsentStatus, PassportStatus,
+    AAConsentStatus, TransactionClassificationType, IdentityVerificationStatus
 )
 from app.models.user import User
 from app.models.worker_profile import WorkerProfile
@@ -14,6 +15,11 @@ from app.models.consent import Consent
 from app.models.audit_log import AuditLog
 from app.models.system_setting import SystemSetting
 from app.models.notification import Notification
+from app.models.financial_account import FinancialAccount
+from app.models.aa_consent import AAConsent
+from app.models.transaction_classification import TransactionClassification
+from app.models.income_report import IncomeReport
+from app.models.report_share import ReportShare
 
 __all__ = [
     "UserRole",
@@ -23,6 +29,9 @@ __all__ = [
     "VerificationStatus",
     "ConsentStatus",
     "PassportStatus",
+    "AAConsentStatus",
+    "TransactionClassificationType",
+    "IdentityVerificationStatus",
     "User",
     "WorkerProfile",
     "LenderProfile",
@@ -35,4 +44,9 @@ __all__ = [
     "AuditLog",
     "SystemSetting",
     "Notification",
+    "FinancialAccount",
+    "AAConsent",
+    "TransactionClassification",
+    "IncomeReport",
+    "ReportShare",
 ]

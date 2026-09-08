@@ -6,6 +6,10 @@ echo        "Turn gig income into trusted financial evidence."
 echo ============================================================
 echo.
 
+set "PY_CMD=python"
+if exist "%~dp0backend\.venv\Scripts\python.exe" set "PY_CMD=%~dp0backend\.venv\Scripts\python.exe"
+if exist "%~dp0credbridge\backend\.venv\Scripts\python.exe" set "PY_CMD=%~dp0credbridge\backend\.venv\Scripts\python.exe"
+
 if "%1"=="docker" goto launch_docker
 if "%1"=="local" goto launch_local
 if "%1"=="test" goto run_tests
@@ -26,7 +30,7 @@ echo.
 echo Launching CredBridge in Local Mode...
 cd credbridge
 echo [1/2] Starting FastAPI Backend on http://localhost:8001 ...
-start "CredBridge Backend (FastAPI)" cmd /k "cd backend && set PYTHONPATH=..;backend;. && python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload"
+start "CredBridge Backend (FastAPI)" cmd /k "cd backend && set PYTHONPATH=..;backend;. && ^"%PY_CMD%^" -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload"
 
 echo [2/2] Starting React Frontend on http://localhost:5173 ...
 start "CredBridge Frontend (Vite)" cmd /k "cd frontend && set VITE_API_URL=http://localhost:8001 && npm run dev"
@@ -42,7 +46,7 @@ goto end
 :run_tests
 echo.
 echo Running Full Pytest Suite...
-cmd /c "set PYTHONPATH=credbridge;credbridge\backend;. && python -m pytest credbridge/backend/tests credbridge/intelligence/tests"
+cmd /c "set PYTHONPATH=credbridge;credbridge\backend;. && ^"%PY_CMD%^" -m pytest credbridge/backend/tests credbridge/intelligence/tests"
 pause
 goto end
 

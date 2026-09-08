@@ -37,3 +37,24 @@ class PassportStatus(str, Enum):
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     REVOKED = "REVOKED"
+
+class AAConsentStatus(str, Enum):
+    REQUESTED = "REQUESTED"
+    ACTIVE = "ACTIVE"
+    USED = "USED"
+    EXPIRED = "EXPIRED"
+    REVOKED = "REVOKED"
+    FAILED = "FAILED"
+
+class TransactionClassificationType(str, Enum):
+    GIG_INCOME = "GIG_INCOME"
+    NON_GIG_INCOME = "NON_GIG_INCOME"
+    EXPENSE = "EXPENSE"
+    TRANSFER = "TRANSFER"
+    UNKNOWN = "UNKNOWN"
+
+class IdentityVerificationStatus(str, Enum):
+    UNVERIFIED = "UNVERIFIED"
+    PENDING = "PENDING"
+    VERIFIED = "VERIFIED"
+    FAILED = "FAILED"

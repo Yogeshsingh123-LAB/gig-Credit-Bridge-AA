@@ -8,15 +8,15 @@ import { AdminLayout } from '../layouts/AdminLayout';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { VerifyReportPage } from '../pages/VerifyReportPage';
 
 import { WorkerDashboardPage } from '../pages/worker/WorkerDashboardPage';
-import { WorkerPlatformsPage } from '../pages/worker/WorkerPlatformsPage';
-import { WorkerTransactionsPage } from '../pages/worker/WorkerTransactionsPage';
-import { WorkerVerificationPage } from '../pages/worker/WorkerVerificationPage';
-import { WorkerScorePage } from '../pages/worker/WorkerScorePage';
-import { WorkerPassportPage } from '../pages/worker/WorkerPassportPage';
+import { WorkerGenerateReportPage } from '../pages/worker/WorkerGenerateReportPage';
+import { WorkerReportsPage } from '../pages/worker/WorkerReportsPage';
+import { WorkerReportPreviewPage } from '../pages/worker/WorkerReportPreviewPage';
 import { WorkerConsentPage } from '../pages/worker/WorkerConsentPage';
 import { WorkerProfilePage } from '../pages/worker/WorkerProfilePage';
+import { WorkerSettingsPage } from '../pages/worker/WorkerSettingsPage';
 
 import { LenderDashboardPage } from '../pages/lender/LenderDashboardPage';
 import { LenderApplicantsPage } from '../pages/lender/LenderApplicantsPage';
@@ -59,9 +59,13 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        {/* Public Report Verification Routes */}
+        <Route path="verify/report" element={<VerifyReportPage />} />
+        <Route path="verify/report/:reportId" element={<VerifyReportPage />} />
+        <Route path="lender/verify-report" element={<VerifyReportPage />} />
       </Route>
 
-      {/* Worker Portal Routes */}
+      {/* Simplified Worker Portal Routes */}
       <Route
         path="/worker"
         element={
@@ -72,13 +76,22 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<WorkerDashboardPage />} />
-        <Route path="platforms" element={<WorkerPlatformsPage />} />
-        <Route path="transactions" element={<WorkerTransactionsPage />} />
-        <Route path="verification" element={<WorkerVerificationPage />} />
-        <Route path="score" element={<WorkerScorePage />} />
-        <Route path="passport" element={<WorkerPassportPage />} />
+        <Route path="generate-report" element={<WorkerGenerateReportPage />} />
+        <Route path="reports" element={<WorkerReportsPage />} />
+        <Route path="reports/:id" element={<WorkerReportPreviewPage />} />
         <Route path="consent" element={<WorkerConsentPage />} />
         <Route path="profile" element={<WorkerProfilePage />} />
+        <Route path="settings" element={<WorkerSettingsPage />} />
+
+        {/* Legacy route aliases redirected seamlessly */}
+        <Route path="onboarding" element={<Navigate to="/worker/generate-report" replace />} />
+        <Route path="score" element={<Navigate to="/worker/dashboard" replace />} />
+        <Route path="passport" element={<Navigate to="/worker/reports" replace />} />
+        <Route path="platforms" element={<Navigate to="/worker/dashboard" replace />} />
+        <Route path="transactions" element={<Navigate to="/worker/dashboard" replace />} />
+        <Route path="data-access" element={<Navigate to="/worker/consent" replace />} />
+        <Route path="recommendations" element={<Navigate to="/worker/dashboard" replace />} />
+        <Route path="verification" element={<Navigate to="/worker/generate-report" replace />} />
       </Route>
 
       {/* Lender Portal Routes */}

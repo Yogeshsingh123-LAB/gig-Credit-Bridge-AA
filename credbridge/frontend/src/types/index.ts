@@ -6,19 +6,24 @@ export interface User {
   email: string;
   role: UserRole;
   is_active: boolean;
+  worker_profile?: WorkerProfile;
 }
 
 export interface WorkerProfile {
   id: string;
   user_id: string;
-  name: string;
-  email: string;
-  role: string;
+  name?: string;
+  email?: string;
+  role?: string;
   phone?: string;
   city?: string;
   occupation?: string;
   experience_months: number;
   profile_completion: number;
+  identity_status?: string;
+  identity_source?: string;
+  masked_aadhaar?: string;
+  identity_name?: string;
 }
 
 export interface LenderProfile {
@@ -206,4 +211,168 @@ export interface HealthResponse {
   status: string;
   app: string;
   version: string;
+}
+
+export interface DigiLockerStatus {
+  identity_status: 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'FAILED';
+  verification_source: string;
+  masked_aadhaar: string;
+  verified_name: string;
+  verified_at?: string;
+}
+
+export interface AAConsentRecord {
+  id: string;
+  consent_handle: string;
+  purpose: string;
+  data_types: string[];
+  selected_accounts: string[];
+  selected_sources: string[];
+  start_date?: string;
+  end_date?: string;
+  consent_status: 'REQUESTED' | 'ACTIVE' | 'USED' | 'EXPIRED' | 'REVOKED' | 'FAILED';
+  provider: string;
+  granted_at: string;
+  expires_at?: string;
+  revoked_at?: string;
+}
+
+export interface BankAccountItem {
+  id: string;
+  bank_name: string;
+  account_mask: string;
+  account_type: string;
+  fip_id: string;
+  fip_name?: string;
+  balance_indicative: number;
+  currency: string;
+  is_selected: boolean;
+}
+
+export interface AAPlatformItem {
+  name: string;
+  detected: boolean;
+  category: string;
+  description: string;
+}
+
+export interface ClassifiedTransactionItem {
+  transaction_id: string;
+  date: string;
+  amount: number;
+  source: string;
+  description: string;
+  matched_platform?: string;
+  classification: string;
+  confidence: number;
+  reason: string;
+  included_in_report: boolean;
+}
+
+export interface ProcessDataResponse {
+  start_date: string;
+  end_date: string;
+  total_gig_income: number;
+  average_monthly_gig_income: number;
+  months_analyzed: number;
+  monthly_breakdown: Array<{ month: string; amount: number }>;
+  platform_breakdown: Array<{ platform: string; amount: number; percentage: number }>;
+  verification_confidence: number;
+  data_quality: {
+    total_transactions: number;
+    matching_transactions: number;
+    excluded_transactions: number;
+    unknown_transactions: number;
+    excluded_breakdown: Record<string, number>;
+    quality_score: number;
+  };
+  sample_classifications: ClassifiedTransactionItem[];
+  all_classifications_count: number;
+}
+
+export interface IncomeReportDetail {
+  id: string;
+  report_id?: string;
+  report_number: string;
+  worker_name: string;
+  analysis_start_date: string;
+  analysis_end_date: string;
+  analysis_period?: string;
+  verified_average_monthly_gig_income: number;
+  total_verified_gig_income: number;
+  months_analyzed?: number;
+  income_trend?: string;
+  income_consistency?: string;
+  monthly_breakdown: Array<{ month: string; amount: number }>;
+  platform_breakdown: Array<{ platform: string; amount: number; percentage: number }>;
+  verification_confidence: number;
+  accounts_analyzed: string[];
+  platforms_selected: string[];
+  data_quality: {
+    total_transactions: number;
+    matching_transactions: number;
+    excluded_transactions: number;
+    unknown_transactions: number;
+    excluded_breakdown?: Record<string, number>;
+    quality_score: number;
+  };
+  methodology: string;
+  generated_at: string;
+  issued_at?: string;
+  expires_at?: string;
+  canonical_hash?: string;
+  signature?: string;
+  calculation_version: string;
+  data_source: string;
+  status: string;
+  report_status?: string;
+}
+
+export interface IncomeReportPdfPayload {
+  title: string;
+  report_number: string;
+  worker_name: string;
+  masked_aadhaar: string;
+  analysis_period: string;
+  verified_average_monthly_gig_income: string;
+  total_verified_gig_income: string;
+  verification_confidence: string;
+  accounts_analyzed: string[];
+  platforms_selected: string[];
+  monthly_breakdown: Array<{ month: string; amount: number }>;
+  platform_breakdown: Array<{ platform: string; amount: number; percentage: number }>;
+  data_quality: any;
+  methodology: string;
+  disclaimer: string;
+  generated_at: string;
+}
+
+export interface FinancialRecommendationItem {
+  id: string;
+  title: string;
+  category: string;
+  indicative_range: string;
+  fit_reasons: string[];
+  disclaimer: string;
+  eligible_for_exploration: boolean;
+}
+
+export interface ReportShareRecord {
+  id: string;
+  recipient_name: string;
+  share_scope: Record<string, boolean>;
+  include_raw_transactions: boolean;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+  granted_at: string;
+  expires_at?: string;
+  revoked_at?: string;
+}
+
+export interface DataAccessAuditItem {
+  id: string;
+  timestamp: string;
+  action: string;
+  description: string;
+  details: any;
+  status: string;
 }

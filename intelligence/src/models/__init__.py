@@ -1,5 +1,5 @@
 """
-Intelligence models exports.
+Intelligence models exports for Phase 1 & Phase 2.
 """
 
 from intelligence.src.models.transaction import (
@@ -13,10 +13,19 @@ from intelligence.src.models.data_quality import (
 )
 from intelligence.src.models.analytics_result import (
     FinancialAnalyticsResult,
+    IncomeAnalysis,
+    ExpenseAnalysis,
+    MonthlyAnalysis,
+    SourceAnalysis,
+    VolatilityAnalysis,
+    VolatilityClassification,
+    TrendAnalysis,
+    TrendDirection,
+    DataQuality,
     MonthlyAggregate,
+    IncomeTrend,
     VolatilityResult,
     ConsistencyResult,
-    IncomeTrend,
 )
 
 __all__ = [
@@ -26,8 +35,17 @@ __all__ = [
     "DataQualityResult",
     "QualityStatus",
     "FinancialAnalyticsResult",
+    "IncomeAnalysis",
+    "ExpenseAnalysis",
+    "MonthlyAnalysis",
+    "SourceAnalysis",
+    "VolatilityAnalysis",
+    "VolatilityClassification",
+    "TrendAnalysis",
+    "TrendDirection",
+    "DataQuality",
     "MonthlyAggregate",
+    "IncomeTrend",
     "VolatilityResult",
     "ConsistencyResult",
-    "IncomeTrend",
 ]

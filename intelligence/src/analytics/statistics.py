@@ -164,43 +164,6 @@ def compute_financial_analytics(records: List[Union[dict, TransactionRecord]]) -
     """
     Master function for processing raw transaction records into a complete FinancialAnalyticsResult.
     """
-    # 1. Evaluate Data Quality
-    dq_result = assess_data_quality(records)
+    from intelligence.src.analytics.financial_analytics import analyze_transactions
+    return analyze_transactions(records)
 
-    # 2. Normalize transaction records
-    normalized = normalize_transactions(records)
-
-    # 3. Monthly aggregations
-    monthly_aggs = aggregate_monthly_income(normalized)
-
-    # 4. Extract platform sources
-    gig_recs = get_gig_income_transactions(normalized)
-    unique_sources = sorted(list({r.source for r in gig_recs if r.source}))
-
-    # 5. Calculate statistical metrics
-    tot_inc = calculate_total_income(normalized)
-    avg_inc = calculate_average_monthly_income(monthly_aggs)
-    med_inc = calculate_median_monthly_income(monthly_aggs)
-    min_inc = calculate_min_monthly_income(monthly_aggs)
-    max_inc = calculate_max_monthly_income(monthly_aggs)
-
-    vol_res = calculate_income_volatility(monthly_aggs)
-    trend_res = calculate_income_trend(monthly_aggs)
-    cons_res = calculate_income_consistency(monthly_aggs)
-
-    return FinancialAnalyticsResult(
-        total_income=tot_inc,
-        average_monthly_income=avg_inc,
-        median_monthly_income=med_inc,
-        minimum_monthly_income=min_inc,
-        maximum_monthly_income=max_inc,
-        months_analyzed=cons_res.months_analyzed,
-        months_with_income=cons_res.months_with_income,
-        income_volatility_percentage=vol_res.value,
-        volatility_status=vol_res.status,
-        income_consistency_percentage=cons_res.consistency_percentage,
-        income_sources=unique_sources,
-        monthly_income=monthly_aggs,
-        trend=trend_res,
-        data_quality=dq_result,
-    )

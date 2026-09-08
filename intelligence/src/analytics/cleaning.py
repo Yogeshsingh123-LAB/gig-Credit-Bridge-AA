@@ -1,6 +1,6 @@
 """
-Data Cleaning Foundation for CredBridge Intelligence.
-Provides deterministic, explainable validation, duplicate detection, and quality assessment.
+Data Cleaning & Quality Analysis for CredBridge Intelligence.
+Provides deterministic validation, duplicate detection, and 0-100 data quality scoring.
 """
 
 from datetime import date
@@ -16,6 +16,17 @@ from intelligence.src.models.data_quality import (
     DataQualityResult,
     QualityStatus,
 )
+from intelligence.src.models.analytics_result import DataQuality
+from intelligence.src.analytics.config import (
+    DQ_BASE_SCORE,
+    DQ_MISSING_DATE_PENALTY,
+    DQ_INVALID_AMOUNT_PENALTY,
+    DQ_DUPLICATE_PENALTY,
+    DQ_INVALID_CATEGORY_PENALTY,
+    DQ_INVALID_TYPE_PENALTY,
+    DQ_MIN_MONTHS_RECOMMENDED,
+    DQ_SHORT_HISTORY_PENALTY,
+)
 from intelligence.src.utils.dates import parse_date, is_future_date
 
 
@@ -25,8 +36,8 @@ VALID_CATEGORIES = {c.value for c in TransactionCategory}
 
 def normalize_transactions(records: List[Union[dict, TransactionRecord]]) -> List[TransactionRecord]:
     """
-    Normalizes input records (dicts or Pydantic objects) into valid TransactionRecord objects.
-    Invalid records that cannot be converted are excluded from the returned list.
+    Normalizes raw input records into validated TransactionRecord objects.
+    Records that cannot be converted are excluded.
     """
     normalized = []
     for record in records:
@@ -34,7 +45,6 @@ def normalize_transactions(records: List[Union[dict, TransactionRecord]]) -> Lis
             normalized.append(record)
         elif isinstance(record, dict):
             try:
-                # Ensure date is parsed
                 rec_copy = dict(record)
                 if isinstance(rec_copy.get("transaction_date"), str):
                     parsed_d = parse_date(rec_copy["transaction_date"])
@@ -51,8 +61,8 @@ def validate_transaction_dates(
     reference_date: date = None
 ) -> Dict[str, Any]:
     """
-    Validates transaction dates across input records.
-    Detects missing dates, invalid dates, and future dates.
+    Validates transaction dates.
+    Detects missing, invalid, or future dates.
     """
     missing_dates = []
     invalid_dates = []
@@ -86,7 +96,6 @@ def validate_transaction_amounts(records: List[Union[dict, TransactionRecord]]) 
     """
     Validates transaction amounts.
     Detects null amounts, non-numeric amounts, negative amounts, and zero amounts.
-    Does not modify financial values; flags them for audit.
     """
     null_amounts = []
     non_numeric_amounts = []
@@ -127,12 +136,12 @@ def validate_transaction_amounts(records: List[Union[dict, TransactionRecord]]) 
 
 def remove_duplicate_transactions(records: List[Union[dict, TransactionRecord]]) -> Dict[str, Any]:
     """
-    Detects duplicate transactions using reference_id (when available)
-    or composite keys (date, amount, source, description).
-    Does not delete records silently; returns unique records and flagged duplicate details.
+    Detects duplicate transactions using composite key:
+    worker_id + transaction_date + transaction_type + amount + reference_id
+    or (date, amount, source, description) fallback.
+    Does not delete records silently; returns clean records and duplicate flag details.
     """
-    seen_refs: Set[str] = set()
-    seen_composites: Set[Tuple] = set()
+    seen_keys: Set[Tuple] = set()
 
     cleaned_records = []
     duplicate_records = []
@@ -140,40 +149,48 @@ def remove_duplicate_transactions(records: List[Union[dict, TransactionRecord]])
     for idx, rec in enumerate(records):
         if isinstance(rec, TransactionRecord):
             rec_id = rec.id
-            ref_id = rec.reference_id
+            w_id = rec.worker_id
             t_date = str(rec.transaction_date) if rec.transaction_date else None
+            t_type = rec.transaction_type
             amt = rec.amount
+            ref_id = rec.reference_id
             src = rec.source
             desc = rec.description
         else:
             rec_id = rec.get("id", f"record_{idx}")
-            ref_id = rec.get("reference_id")
+            w_id = rec.get("worker_id")
             t_date = str(rec.get("transaction_date")) if rec.get("transaction_date") else None
+            t_type = rec.get("transaction_type")
             amt = rec.get("amount")
+            ref_id = rec.get("reference_id")
             src = rec.get("source")
             desc = rec.get("description")
+
+        # Preferred composite key
+        key1 = (w_id, t_date, t_type, amt, ref_id) if ref_id else None
+        key2 = (w_id, t_date, t_type, amt, src, desc)
 
         is_dup = False
         dup_reason = ""
 
-        if ref_id and ref_id in seen_refs:
+        if key1 and key1 in seen_keys:
             is_dup = True
-            dup_reason = f"Duplicate reference_id: {ref_id}"
-        elif ref_id:
-            seen_refs.add(ref_id)
+            dup_reason = f"Duplicate composite key with reference_id: {ref_id}"
+        elif key1:
+            seen_keys.add(key1)
 
-        composite_key = (t_date, amt, src, desc)
         if not is_dup:
-            if composite_key in seen_composites:
+            if key2 in seen_keys:
                 is_dup = True
-                dup_reason = f"Duplicate key (date={t_date}, amount={amt}, source={src}, description={desc})"
+                dup_reason = f"Duplicate transaction tuple: date={t_date}, type={t_type}, amount={amt}, source={src}"
             else:
-                seen_composites.add(composite_key)
+                seen_keys.add(key2)
 
         if is_dup:
             duplicate_records.append({"record_id": rec_id, "reference_id": ref_id, "reason": dup_reason})
         else:
             cleaned_records.append(rec)
+
 
     return {
         "cleaned_records": cleaned_records,
@@ -184,7 +201,7 @@ def remove_duplicate_transactions(records: List[Union[dict, TransactionRecord]])
 
 def validate_transaction_types(records: List[Union[dict, TransactionRecord]]) -> Dict[str, Any]:
     """
-    Validates whether transaction_type is in VALID_TYPES (CREDIT, DEBIT).
+    Validates whether transaction_type is CREDIT or DEBIT.
     """
     invalid_types = []
     valid_records = []
@@ -207,7 +224,7 @@ def validate_transaction_types(records: List[Union[dict, TransactionRecord]]) ->
 
 def validate_transaction_categories(records: List[Union[dict, TransactionRecord]]) -> Dict[str, Any]:
     """
-    Validates whether category is in VALID_CATEGORIES.
+    Validates transaction categories against approved list.
     """
     invalid_categories = []
     valid_records = []
@@ -230,7 +247,7 @@ def validate_transaction_categories(records: List[Union[dict, TransactionRecord]
 
 def detect_missing_values(records: List[Union[dict, TransactionRecord]]) -> Dict[str, Any]:
     """
-    Detects records missing mandatory contract fields.
+    Detects missing mandatory contract fields.
     """
     missing_fields = []
     mandatory = ["id", "worker_id", "transaction_date", "transaction_type", "amount", "category", "source"]
@@ -255,9 +272,8 @@ def detect_missing_values(records: List[Union[dict, TransactionRecord]]) -> Dict
 
 def get_gig_income_transactions(records: List[TransactionRecord]) -> List[TransactionRecord]:
     """
-    Deterministic income filter.
-    Only includes transactions where transaction_type == CREDIT AND category == GIG_INCOME.
-    Explicitly excludes TRANSFER, OTHER, and DEBIT records.
+    Deterministic income filter:
+    Strictly transaction_type == CREDIT AND category == GIG_INCOME.
     """
     gig_income = []
     for rec in records:
@@ -270,64 +286,113 @@ def get_gig_income_transactions(records: List[TransactionRecord]) -> List[Transa
     return gig_income
 
 
-def assess_data_quality(records: List[Union[dict, TransactionRecord]]) -> DataQualityResult:
+def compute_data_quality(records: List[Union[dict, TransactionRecord]]) -> DataQuality:
     """
-    Evaluates dataset quality and returns a DataQualityResult model.
+    Computes transparent data quality score (0-100) and warning notes for Phase 2.
     """
     total_count = len(records)
+    warnings = []
+
     if total_count == 0:
-        return DataQualityResult(
-            transaction_count=0,
-            income_transaction_count=0,
-            months_available=0,
-            missing_dates=0,
-            invalid_amounts=0,
+        return DataQuality(
+            total_transactions=0,
+            valid_transactions=0,
+            invalid_transactions=0,
             duplicate_transactions=0,
-            invalid_categories=0,
-            invalid_transaction_types=0,
-            quality_status=QualityStatus.INSUFFICIENT_DATA,
+            missing_values=0,
+            quality_score=0,
+            warnings=["No transaction records provided for analysis."],
         )
 
     dates_res = validate_transaction_dates(records)
     amounts_res = validate_transaction_amounts(records)
     dup_res = remove_duplicate_transactions(records)
+    missing_res = detect_missing_values(records)
     types_res = validate_transaction_types(records)
     cat_res = validate_transaction_categories(records)
 
-    normalized = normalize_transactions(records)
-    gig_income_recs = get_gig_income_transactions(normalized)
+    invalid_cnt = dates_res["invalid_count"] + amounts_res["invalid_count"] + types_res["invalid_count"] + cat_res["invalid_count"]
+    dup_cnt = dup_res["duplicate_count"]
+    missing_cnt = missing_res["count"]
+    valid_cnt = max(0, total_count - invalid_cnt - dup_cnt)
 
-    # Calculate months available from valid gig income records
-    months = set()
-    for rec in gig_income_recs:
-        if rec.transaction_date:
-            months.add(rec.transaction_date.strftime("%Y-%m"))
+    score = DQ_BASE_SCORE
 
-    missing_dates_cnt = dates_res["invalid_count"]
-    invalid_amounts_cnt = amounts_res["invalid_count"]
-    duplicate_cnt = dup_res["duplicate_count"]
-    invalid_types_cnt = types_res["invalid_count"]
-    invalid_cat_cnt = cat_res["invalid_count"]
+    if dates_res["invalid_count"] > 0:
+        penalty = min(30, dates_res["invalid_count"] * DQ_MISSING_DATE_PENALTY)
+        score -= penalty
+        warnings.append(f"Found {dates_res['invalid_count']} records with missing or invalid transaction dates.")
 
-    total_defects = missing_dates_cnt + invalid_amounts_cnt + duplicate_cnt + invalid_types_cnt + invalid_cat_cnt
+    if amounts_res["invalid_count"] > 0:
+        penalty = min(30, amounts_res["invalid_count"] * DQ_INVALID_AMOUNT_PENALTY)
+        score -= penalty
+        warnings.append(f"Found {amounts_res['invalid_count']} records with non-positive, null, or invalid amounts.")
 
-    if len(gig_income_recs) == 0:
+    if dup_cnt > 0:
+        penalty = min(20, dup_cnt * DQ_DUPLICATE_PENALTY)
+        score -= penalty
+        warnings.append(f"Detected {dup_cnt} duplicate transaction records.")
+
+    if cat_res["invalid_count"] > 0:
+        penalty = min(15, cat_res["invalid_count"] * DQ_INVALID_CATEGORY_PENALTY)
+        score -= penalty
+        warnings.append(f"Found {cat_res['invalid_count']} records with unrecognized transaction categories.")
+
+    # Calculate months spanned by clean gig income
+    normalized = normalize_transactions(dup_res["cleaned_records"])
+    gig_recs = get_gig_income_transactions(normalized)
+    months = {rec.transaction_date.strftime("%Y-%m") for rec in gig_recs if rec.transaction_date}
+
+    if len(months) < DQ_MIN_MONTHS_RECOMMENDED:
+        score -= DQ_SHORT_HISTORY_PENALTY
+        warnings.append(f"Income data is available for only {len(months)} month(s). Recommended history is at least {DQ_MIN_MONTHS_RECOMMENDED} months.")
+
+    final_score = max(0, min(100, int(score)))
+
+    return DataQuality(
+        total_transactions=total_count,
+        valid_transactions=valid_cnt,
+        invalid_transactions=invalid_cnt,
+        duplicate_transactions=dup_cnt,
+        missing_values=missing_cnt,
+        quality_score=final_score,
+        warnings=warnings,
+    )
+
+
+def assess_data_quality(records: List[Union[dict, TransactionRecord]]) -> DataQualityResult:
+    """
+    Phase 1 backward-compatible DataQualityResult provider.
+    """
+    dq = compute_data_quality(records)
+
+    total_count = dq.total_transactions
+    if total_count == 0:
         status = QualityStatus.INSUFFICIENT_DATA
-    elif total_defects == 0 and len(months) >= 3:
+    elif dq.quality_score >= 85:
         status = QualityStatus.GOOD
-    elif total_defects <= max(2, int(total_count * 0.15)):
+    elif dq.quality_score >= 60:
         status = QualityStatus.WARNING
     else:
         status = QualityStatus.POOR
 
+    dates_res = validate_transaction_dates(records)
+    amounts_res = validate_transaction_amounts(records)
+    cat_res = validate_transaction_categories(records)
+    types_res = validate_transaction_types(records)
+
+    normalized = normalize_transactions(records)
+    gig_recs = get_gig_income_transactions(normalized)
+    months = {rec.transaction_date.strftime("%Y-%m") for rec in gig_recs if rec.transaction_date}
+
     return DataQualityResult(
         transaction_count=total_count,
-        income_transaction_count=len(gig_income_recs),
+        income_transaction_count=len(gig_recs),
         months_available=len(months),
-        missing_dates=missing_dates_cnt,
-        invalid_amounts=invalid_amounts_cnt,
-        duplicate_transactions=duplicate_cnt,
-        invalid_categories=invalid_cat_cnt,
-        invalid_transaction_types=invalid_types_cnt,
+        missing_dates=dates_res["invalid_count"],
+        invalid_amounts=amounts_res["invalid_count"],
+        duplicate_transactions=dq.duplicate_transactions,
+        invalid_categories=cat_res["invalid_count"],
+        invalid_transaction_types=types_res["invalid_count"],
         quality_status=status,
     )

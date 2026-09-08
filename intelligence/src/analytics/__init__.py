@@ -1,5 +1,5 @@
 """
-Analytics subpackage exports.
+Analytics subpackage exports for Phase 1 & Phase 2.
 """
 
 from intelligence.src.analytics.cleaning import (
@@ -11,6 +11,7 @@ from intelligence.src.analytics.cleaning import (
     validate_transaction_categories,
     detect_missing_values,
     get_gig_income_transactions,
+    compute_data_quality,
     assess_data_quality,
 )
 from intelligence.src.analytics.aggregation import (
@@ -30,6 +31,12 @@ from intelligence.src.analytics.statistics import (
     calculate_income_consistency,
     compute_financial_analytics,
 )
+from intelligence.src.analytics.financial_analytics import analyze_transactions
+from intelligence.src.analytics.config import (
+    VOLATILITY_LOW_THRESHOLD,
+    VOLATILITY_MODERATE_THRESHOLD,
+    TREND_CHANGE_THRESHOLD,
+)
 
 __all__ = [
     "normalize_transactions",
@@ -40,6 +47,7 @@ __all__ = [
     "validate_transaction_categories",
     "detect_missing_values",
     "get_gig_income_transactions",
+    "compute_data_quality",
     "assess_data_quality",
     "aggregate_monthly_income",
     "aggregate_monthly_expenses",
@@ -54,4 +62,8 @@ __all__ = [
     "calculate_income_trend",
     "calculate_income_consistency",
     "compute_financial_analytics",
+    "analyze_transactions",
+    "VOLATILITY_LOW_THRESHOLD",
+    "VOLATILITY_MODERATE_THRESHOLD",
+    "TREND_CHANGE_THRESHOLD",
 ]

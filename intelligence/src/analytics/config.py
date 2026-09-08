@@ -1,0 +1,21 @@
+"""
+Configurable Thresholds and Constants for CredBridge Intelligence Analytics.
+Centralizes classification boundaries and scoring parameters.
+"""
+
+# Income Volatility Classification Thresholds (expressed in Coefficient of Variation %)
+VOLATILITY_LOW_THRESHOLD = 15.0      # CV < 15.0% -> LOW
+VOLATILITY_MODERATE_THRESHOLD = 30.0 # 15.0% <= CV <= 30.0% -> MODERATE; CV > 30.0% -> HIGH
+
+# Income Trend Classification Thresholds (% change per month relative to mean)
+TREND_CHANGE_THRESHOLD = 3.0          # > 3.0% -> INCREASING; < -3.0% -> DECREASING; else -> STABLE
+
+# Data Quality Scoring Parameters (0-100 base scale)
+DQ_BASE_SCORE = 100
+DQ_MISSING_DATE_PENALTY = 10
+DQ_INVALID_AMOUNT_PENALTY = 10
+DQ_DUPLICATE_PENALTY = 5
+DQ_INVALID_CATEGORY_PENALTY = 5
+DQ_INVALID_TYPE_PENALTY = 5
+DQ_MIN_MONTHS_RECOMMENDED = 3
+DQ_SHORT_HISTORY_PENALTY = 15

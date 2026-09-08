@@ -6,7 +6,11 @@ import {
   AuditLog, HealthResponse
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+if (rawBaseUrl.includes(':8000')) {
+  rawBaseUrl = rawBaseUrl.replace(':8000', ':8001');
+}
+const API_BASE_URL = rawBaseUrl;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

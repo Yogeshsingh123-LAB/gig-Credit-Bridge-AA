@@ -6,49 +6,61 @@ class PlatformPatternMatcher:
     """
     Configurable pattern and descriptor matcher for gig platforms and bank transactions.
     Purely deterministic rule-based engine.
+    Supports synthetic demo platforms (QuickRide, FoodDash, UrbanMove, ParcelGo, TaskKart, etc.)
+    and industry platforms (Uber, Zomato, Swiggy, etc.).
     """
 
     PLATFORM_PATTERNS: Dict[str, List[str]] = {
+        # Synthetic Demo Platforms (Sections 82, 85)
         "QuickRide": [
             r"\bquickride\b",
             r"quick\s*ride",
-            r"quickride\s*payout"
+            r"quickride\s*technologies",
+            r"quickride\s*payout",
+            r"quickride\s*disbursement"
         ],
         "FoodDash": [
             r"\bfooddash\b",
             r"food\s*dash",
-            r"fooddash\s*settlement",
-            r"fooddash\s*partner"
+            r"fooddash\s*media",
+            r"fooddash\s*payout",
+            r"fooddash\s*settlement"
         ],
         "UrbanMove": [
             r"\burbanmove\b",
             r"urban\s*move",
-            r"urbanmove\s*logistics",
-            r"urbanmove\s*payout"
+            r"urbanmove\s*cabs",
+            r"urbanmove\s*fleet",
+            r"urbanmove\s*driver"
         ],
         "ParcelGo": [
             r"\bparcelgo\b",
             r"parcel\s*go",
+            r"parcelgo\s*logistics",
             r"parcelgo\s*express",
-            r"parcelgo\s*delivery"
+            r"parcelgo\s*courier"
         ],
         "TaskKart": [
             r"\btaskkart\b",
             r"task\s*kart",
             r"taskkart\s*services",
-            r"taskkart\s*payout"
+            r"taskkart\s*partner"
         ],
         "Local Delivery Services": [
-            r"local\s*delivery\s*services",
-            r"local\s*courier\s*settlement",
-            r"express\s*delivery\s*partner"
+            r"local\s*delivery",
+            r"city\s*logistics\s*payout",
+            r"courier\s*settlement",
+            r"delivery\s*partner\s*disbursement"
         ],
         "Other Identified Gig Income": [
             r"gig\s*income",
-            r"gig\s*payment",
-            r"freelance\s*gig",
-            r"platform\s*disbursement"
+            r"gig\s*payout",
+            r"on-demand\s*partner",
+            r"independent\s*contractor\s*settlement",
+            r"verified\s*gig\s*credit"
         ],
+
+        # Real / Legacy Platforms (Backwards Compatibility)
         "Uber": [
             r"\buber\b",
             r"uber\s*technologies",
@@ -101,24 +113,52 @@ class PlatformPatternMatcher:
         ]
     }
 
+    # Internal Transfers (Must be excluded - Section 87)
+    INTERNAL_TRANSFER_PATTERNS = [
+        r"own\s*account",
+        r"self\s*transfer",
+        r"hdfc\s*->\s*sbi",
+        r"sbi\s*->\s*hdfc",
+        r"icici\s*->\s*hdfc",
+        r"axis\s*->\s*sbi",
+        r"inter-account",
+        r"internal\s*transfer",
+        r"transfer\s*to\s*self"
+    ]
+
+    # Personal Transfers (Must be excluded - Section 93)
     TRANSFER_PATTERNS = [
         r"\bp2p\b",
         r"transfer\s+from",
         r"upi/cr/[a-z\s]+/(?:transfer|p2p|personal)",
-        r"self\s*transfer",
-        r"fund\s*transfer",
-        r"received\s+from",
-        r"own\s*account\s*transfer",
-        r"internal\s*transfer",
-        r"hdfc\s*(?:to|->)\s*sbi",
-        r"sbi\s*(?:to|->)\s*hdfc",
-        r"icici\s*(?:to|->)\s*axis",
-        r"axis\s*(?:to|->)\s*kotak",
         r"family\s*transfer",
         r"friend\s*transfer",
-        r"personal\s*transfer"
+        r"personal\s*transfer",
+        r"fund\s*transfer",
+        r"received\s+from"
     ]
 
+    # Loans (Must be excluded - Section 91)
+    LOAN_PATTERNS = [
+        r"\bloan\b",
+        r"personal\s*loan",
+        r"credit\s*line",
+        r"disbursement/loan",
+        r"bajaj\s*finance",
+        r"earlysalary",
+        r"kreditbee"
+    ]
+
+    # Cash Deposits (Must be excluded without gig evidence - Section 92)
+    CASH_DEPOSIT_PATTERNS = [
+        r"cash\s*deposit",
+        r"cdm\s*deposit",
+        r"by\s*cash",
+        r"cash\s*transfer",
+        r"branch\s*cash"
+    ]
+
+    # Non-gig Corporate Salary (Must be excluded)
     SALARY_PATTERNS = [
         r"\bsalary\b",
         r"\bpayroll\b",
@@ -126,28 +166,16 @@ class PlatformPatternMatcher:
         r"monthly\s+salary"
     ]
 
-    LOAN_PATTERNS = [
-        r"\bloan\b",
-        r"personal\s*loan",
-        r"loan\s*disbursement",
-        r"credit\s*line",
-        r"instant\s*credit"
-    ]
-
-    CASH_DEPOSIT_PATTERNS = [
-        r"cash\s*deposit",
-        r"cdm\s*deposit",
-        r"branch\s*cash",
-        r"cash\s*credit"
-    ]
-
-    REFUND_PATTERNS = [
-        r"\brefund\b",
-        r"cashback",
+    # Reversals and Refunds (Sections 89, 90)
+    REVERSAL_PATTERNS = [
+        r"reversed",
         r"reversal",
-        r"reversed"
+        r"payment\s*reversed",
+        r"refund",
+        r"chargeback"
     ]
 
+    # Living & Operating Expenses
     EXPENSE_PATTERNS = [
         r"petrol",
         r"fuel",
@@ -159,15 +187,17 @@ class PlatformPatternMatcher:
         r"atm\s*cash",
         r"swiggy\s*instamart",
         r"groceries",
+        r"electricity",
+        r"mobile\s*recharge",
+        r"rent",
+        r"restaurant",
+        r"shopping",
+        r"utility",
+        r"loan\s*repayment",
+        r"credit\s*card\s*payment",
         r"service\s*center",
         r"bike\s*repair",
-        r"maintenance",
-        r"grocery",
-        r"rent",
-        r"electricity",
-        r"utility",
-        r"shopping",
-        r"restaurant"
+        r"maintenance"
     ]
 
     @classmethod
@@ -193,18 +223,30 @@ class PlatformPatternMatcher:
     ) -> Dict[str, Any]:
         """
         Classifies transaction into GIG_INCOME, NON_GIG_INCOME, EXPENSE, TRANSFER, or UNKNOWN.
-        Applies worker platform selection rules.
+        Deterministically filters out loans, personal transfers, cash deposits, and internal transfers.
         """
         desc = (description or "").strip()
         t_type = (transaction_type or "CREDIT").upper()
         selected_plats = [p.lower() for p in (selected_platforms or [])]
+        text = desc.lower()
+
+        # Check for Reversals
+        for pat in cls.REVERSAL_PATTERNS:
+            if re.search(pat, text):
+                return {
+                    "matched_platform": None,
+                    "classification": TransactionClassificationType.TRANSFER,
+                    "confidence": 0.95,
+                    "reason": f"Payment reversal / refund ({pat}), adjusted from income",
+                    "included_in_report": False,
+                    "is_reversal": True
+                }
 
         # Case 1: Debit transactions are Expenses
         if t_type == "DEBIT":
-            # Check for specific expense category
             matched_expense_reason = "Debit transaction"
             for pat in cls.EXPENSE_PATTERNS:
-                if re.search(pat, desc.lower()):
+                if re.search(pat, text):
                     matched_expense_reason = f"Operating/living expense ({pat.upper()})"
                     break
             return {
@@ -216,22 +258,42 @@ class PlatformPatternMatcher:
             }
 
         # Case 2: Credit transactions
-        # Check gig platform match
-        plat_match = cls.match_platform(desc)
-        if plat_match:
-            platform_name, conf, reason = plat_match
-            is_platform_selected = len(selected_plats) == 0 or platform_name.lower() in selected_plats
-            return {
-                "matched_platform": platform_name,
-                "classification": TransactionClassificationType.GIG_INCOME,
-                "confidence": conf,
-                "reason": reason if is_platform_selected else f"{platform_name} income detected but platform not selected for this report",
-                "included_in_report": is_platform_selected
-            }
+        # Check internal transfers first (HDFC -> SBI etc.)
+        for pat in cls.INTERNAL_TRANSFER_PATTERNS:
+            if re.search(pat, text):
+                return {
+                    "matched_platform": None,
+                    "classification": TransactionClassificationType.TRANSFER,
+                    "confidence": 0.98,
+                    "reason": "Internal own-account transfer, excluded from gig income",
+                    "included_in_report": False
+                }
 
-        # Check for personal transfers
+        # Check loans
+        for pat in cls.LOAN_PATTERNS:
+            if re.search(pat, text):
+                return {
+                    "matched_platform": None,
+                    "classification": TransactionClassificationType.NON_GIG_INCOME,
+                    "confidence": 0.98,
+                    "reason": "Loan disbursement, excluded from gig income",
+                    "included_in_report": False
+                }
+
+        # Check cash deposits
+        for pat in cls.CASH_DEPOSIT_PATTERNS:
+            if re.search(pat, text):
+                return {
+                    "matched_platform": None,
+                    "classification": TransactionClassificationType.NON_GIG_INCOME,
+                    "confidence": 0.95,
+                    "reason": "Cash deposit without gig evidence, excluded from gig income",
+                    "included_in_report": False
+                }
+
+        # Check personal transfers
         for pat in cls.TRANSFER_PATTERNS:
-            if re.search(pat, desc.lower()):
+            if re.search(pat, text):
                 return {
                     "matched_platform": None,
                     "classification": TransactionClassificationType.TRANSFER,
@@ -240,9 +302,9 @@ class PlatformPatternMatcher:
                     "included_in_report": False
                 }
 
-        # Check for non-gig corporate salary
+        # Check non-gig corporate salary
         for pat in cls.SALARY_PATTERNS:
-            if re.search(pat, desc.lower()):
+            if re.search(pat, text):
                 return {
                     "matched_platform": None,
                     "classification": TransactionClassificationType.NON_GIG_INCOME,
@@ -250,6 +312,20 @@ class PlatformPatternMatcher:
                     "reason": "Non-gig corporate salary, excluded from gig verification",
                     "included_in_report": False
                 }
+
+        # Check gig platform match
+        plat_match = cls.match_platform(desc)
+        if plat_match:
+            platform_name, conf, reason = plat_match
+            # Deterministic classification: include if no restrictions or selected
+            is_platform_selected = len(selected_plats) == 0 or platform_name.lower() in selected_plats
+            return {
+                "matched_platform": platform_name,
+                "classification": TransactionClassificationType.GIG_INCOME,
+                "confidence": conf,
+                "reason": reason if is_platform_selected else f"{platform_name} income detected",
+                "included_in_report": is_platform_selected
+            }
 
         # Default for unmatched credits
         return {

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, date, timezone
 from typing import Optional, List, Dict, Any
-from sqlalchemy import String, Float, Date, DateTime, JSON, Text, ForeignKey, Integer
+from sqlalchemy import String, Float, Date, DateTime, JSON, Text, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -56,12 +56,14 @@ class IncomeReport(Base):
     issued_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
+        index=True,
         nullable=False
     )
     expires_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True
     )
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
     calculation_version: Mapped[str] = mapped_column(String(20), default="v1.0", nullable=False)
     data_source: Mapped[str] = mapped_column(String(100), default="Account Aggregator (Authorized Financial Data)", nullable=False)
@@ -88,13 +90,13 @@ class IncomeReport(Base):
 
     # Cryptographic integrity attributes
     canonical_hash: Mapped[str] = mapped_column(String(64), nullable=False) # SHA-256
-    signature: Mapped[str] = mapped_column(String(128), nullable=False)     # HMAC-SHA256
-    signature_algorithm: Mapped[str] = mapped_column(String(30), default="HMAC-SHA256", nullable=False)
+    signature: Mapped[str] = mapped_column(String(128), nullable=False)     # Ed25519 / HMAC-SHA256
+    signature_algorithm: Mapped[str] = mapped_column(String(30), default="Ed25519", nullable=False)
     key_version: Mapped[str] = mapped_column(String(20), default="v1", nullable=False)
 
     # Lifecycle status: DRAFT, FINALIZED, ISSUED, ACTIVE, EXPIRED, REVOKED
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE", nullable=False)
-    report_status: Mapped[str] = mapped_column(String(20), default="ACTIVE", nullable=False)
+    report_status: Mapped[str] = mapped_column(String(20), default="ACTIVE", index=True, nullable=False)
     revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(

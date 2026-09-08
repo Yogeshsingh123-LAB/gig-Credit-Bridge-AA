@@ -171,8 +171,10 @@ def get_bank_accounts(
     return [
         {
             "id": a.id,
+            "account_id": a.id,
             "bank_name": a.bank_name,
             "account_mask": a.account_mask,
+            "masked_account_number": a.account_mask,
             "account_type": a.account_type,
             "fip_id": a.fip_id,
             "fip_name": a.fip_name,

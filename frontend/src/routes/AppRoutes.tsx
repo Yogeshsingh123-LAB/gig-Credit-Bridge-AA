@@ -7,7 +7,6 @@ import { AdminLayout } from '../layouts/AdminLayout';
 
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
-import { RegisterPage } from '../pages/RegisterPage';
 import { VerifyReportPage } from '../pages/VerifyReportPage';
 
 import { WorkerDashboardPage } from '../pages/worker/WorkerDashboardPage';
@@ -78,7 +77,7 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<WorkerDashboardPage />} />
-        <Route path="consent" element={<WorkerConsentPage />} />
+        <Route path="consent" element={<Navigate to="/worker/bank-accounts" replace />} />
         <Route path="bank-accounts" element={<WorkerBankAccountsPage />} />
         <Route path="generate-report" element={<WorkerGenerateReportPage />} />
         <Route path="reports" element={<WorkerReportsPage />} />
@@ -92,7 +91,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="passport" element={<Navigate to="/worker/reports" replace />} />
         <Route path="platforms" element={<Navigate to="/worker/dashboard" replace />} />
         <Route path="transactions" element={<Navigate to="/worker/dashboard" replace />} />
-        <Route path="data-access" element={<Navigate to="/worker/consent" replace />} />
+        <Route path="data-access" element={<Navigate to="/worker/bank-accounts" replace />} />
         <Route path="recommendations" element={<Navigate to="/worker/dashboard" replace />} />
         <Route path="verification" element={<Navigate to="/worker/generate-report" replace />} />
       </Route>

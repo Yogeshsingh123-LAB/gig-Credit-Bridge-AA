@@ -57,6 +57,10 @@ export const apiService = {
     const res = await apiClient.get<User>('/api/v1/auth/me');
     return res.data;
   },
+  getDemoUsers: async () => {
+    const res = await apiClient.get('/api/v1/auth/demo-users');
+    return res.data;
+  },
 
   // Profile
   getProfile: async () => {
@@ -228,9 +232,23 @@ export const apiService = {
   },
 
   // Bank Accounts & Platforms
+  getFinancialAccounts: async (): Promise<BankAccountItem[]> => {
+    try {
+      const res = await apiClient.get<BankAccountItem[]>('/api/v1/financial/accounts');
+      return res.data;
+    } catch {
+      const res = await apiClient.get<BankAccountItem[]>('/api/v1/aa/bank-accounts');
+      return res.data;
+    }
+  },
   getBankAccounts: async (): Promise<BankAccountItem[]> => {
-    const res = await apiClient.get<BankAccountItem[]>('/api/v1/aa/bank-accounts');
-    return res.data;
+    try {
+      const res = await apiClient.get<BankAccountItem[]>('/api/v1/financial/accounts');
+      return res.data;
+    } catch {
+      const res = await apiClient.get<BankAccountItem[]>('/api/v1/aa/bank-accounts');
+      return res.data;
+    }
   },
   selectBankAccounts: async (selectedAccountIds: string[]) => {
     const res = await apiClient.post('/api/v1/aa/bank-accounts/select', {

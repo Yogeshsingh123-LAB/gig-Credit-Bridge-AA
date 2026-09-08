@@ -326,15 +326,20 @@ export const WorkerReportPreviewPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Lock className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                Cryptographic Signature & Integrity Hashes
+                Report Authenticity & Verification
               </span>
             </div>
-            <div className="text-[11px] text-slate-400 font-mono space-y-0.5 break-all">
+            <div className="text-[12px] text-slate-300 space-y-0.5">
+              <div><span className="text-slate-500 font-semibold">Report ID:</span> <span className="font-mono">{reportId}</span></div>
+              <div><span className="text-slate-500 font-semibold">Verification:</span> <span className="text-emerald-400 font-medium">Digitally Verifiable</span></div>
+            </div>
+            {/* Raw cryptographic hash and signature strings hidden from print/user report */}
+            <div className="print:hidden text-[11px] text-slate-400 font-mono space-y-0.5 break-all pt-1">
               <div><span className="text-slate-500">SHA-256 Canonical Hash:</span> {canonicalHash}</div>
-              <div><span className="text-slate-500">HMAC-SHA256 Signature:</span> {signature.slice(0, 48)}...</div>
+              <div><span className="text-slate-500">Signature:</span> {signature.slice(0, 48)}...</div>
             </div>
             <p className="text-[10px] text-slate-500 pt-1">
-              Any alteration to monthly numbers or dates will result in immediate signature verification failure.
+              Protected against tampering. Verification portal confirms authentic issuer credentials.
             </p>
           </div>
 

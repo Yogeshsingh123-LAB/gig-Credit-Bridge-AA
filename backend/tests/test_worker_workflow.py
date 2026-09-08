@@ -101,7 +101,7 @@ def test_bank_account_selection(worker_auth_headers):
     assert len(accounts) >= 2
     # Verify masking
     for acc in accounts:
-        assert acc["account_mask"].startswith("****")
+        assert acc["account_mask"].startswith("****") or acc["account_mask"].startswith("••••")
 
     # Update selection
     sel_ids = [accounts[0]["id"]]

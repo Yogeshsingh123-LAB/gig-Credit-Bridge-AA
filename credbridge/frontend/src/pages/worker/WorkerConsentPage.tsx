@@ -117,37 +117,49 @@ export const WorkerConsentPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* 1. What data is accessed */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
+          {/* 1. DATA WE USE */}
+          <div className="p-5 rounded-xl bg-slate-950/80 border border-emerald-500/20 space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>What Is Accessed</span>
+              <span>DATA WE USE</span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              12 months of observed bank statements via RBI-regulated Account Aggregator (AA) network for authorized accounts only.
-            </p>
+            <ul className="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Authorized financial data</li>
+              <li>Selected bank accounts</li>
+              <li>Required 12-month information</li>
+              <li>Information required for income analysis</li>
+            </ul>
           </div>
 
-          {/* 2. What data is NOT stored */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-              <span>What Is NOT Stored</span>
+          {/* 2. DATA WE DO NOT STORE AS RAW CREDENTIAL DATA */}
+          <div className="p-5 rounded-xl bg-slate-950/80 border border-rose-500/20 space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-bold text-rose-400 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+              <span>DATA WE DO NOT STORE AS RAW CREDENTIAL DATA</span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              CredBridge never stores raw bank statements, transaction logs, account passwords, credentials, or actual bank balances.
-            </p>
+            <ul className="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Bank passwords</li>
+              <li>Internet banking passwords</li>
+              <li>UPI PIN</li>
+              <li>Card PIN</li>
+              <li>DigiLocker password</li>
+              <li>DigiLocker OTP</li>
+            </ul>
           </div>
 
-          {/* 3. What is generated & stored */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
+          {/* 3. DATA WE STORE */}
+          <div className="p-5 rounded-xl bg-slate-950/80 border border-teal-500/20 space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-bold text-teal-400 uppercase tracking-wider">
               <span className="w-2 h-2 rounded-full bg-teal-400"></span>
-              <span>What Is Stored</span>
+              <span>DATA WE STORE</span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Only the standardized Verified Gig Income Report summary and its tamper-evident SHA-256 cryptographic hash.
-            </p>
+            <ul className="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+              <li>Generated Verified Gig Income Report</li>
+              <li>Report ID</li>
+              <li>Report integrity information</li>
+              <li>Digital signature information</li>
+              <li>Report metadata required for verification</li>
+            </ul>
           </div>
         </div>
 
@@ -159,14 +171,14 @@ export const WorkerConsentPage: React.FC = () => {
               id="consent-checkbox"
               checked={consentAgreed}
               onChange={(e) => setConsentAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-emerald-500 cursor-pointer"
+              className="mt-1 w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-emerald-500 cursor-pointer shrink-0"
             />
             <div className="space-y-1">
-              <span className="text-xs font-semibold text-slate-200 block">
-                I authorize CredBridge to retrieve and analyze my financial data for the last 12 months for the sole purpose of generating a Verified Gig Income Report.
+              <span className="text-xs font-semibold text-slate-200 block leading-relaxed">
+                I authorize CredBridge to access my authorized financial data through the Account Aggregator ecosystem for the sole purpose of generating a Verified Gig Income Report for the last 12 months.
               </span>
               <span className="text-[11px] text-slate-400 block">
-                I understand that this consent is revocable at any time and that my data is handled under end-to-end cryptographic integrity.
+                Consent is managed securely under RBI Account Aggregator guidelines.
               </span>
             </div>
           </label>

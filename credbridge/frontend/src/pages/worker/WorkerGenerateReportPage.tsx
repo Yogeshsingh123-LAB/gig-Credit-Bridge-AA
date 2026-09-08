@@ -151,10 +151,10 @@ export const WorkerGenerateReportPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs text-slate-400">
             <div className="flex items-center space-x-2 text-slate-300 font-semibold">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Consent & Bank Accounts Confirmed</span>
+              <span>Authorized Bank Accounts Confirmed</span>
             </div>
             <p className="text-[11px] leading-relaxed">
-              CredBridge will connect to your authorized bank accounts, filter gig platform credits (Uber, Zomato, Swiggy, etc.), and compute your 12-month consistency score.
+              CredBridge will connect to your selected bank accounts, filter observed gig credits, and compute your fixed 12-month consistency score.
             </p>
           </div>
 
@@ -173,7 +173,7 @@ export const WorkerGenerateReportPage: React.FC = () => {
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Run 12-Month Analysis</span>
+              <span>Analyze 12 Months & Generate Report</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -195,9 +195,9 @@ export const WorkerGenerateReportPage: React.FC = () => {
 
           <div className="space-y-3 max-w-md mx-auto">
             {[
-              { id: 1, text: 'Authenticating Account Aggregator token and permissions' },
+              { id: 1, text: 'Connecting to authorized bank accounts' },
               { id: 2, text: 'Retrieving 12 months of bank statement credits from authorized accounts' },
-              { id: 3, text: 'Deterministic platform pattern matching (Uber, Zomato, Swiggy, etc.)' },
+              { id: 3, text: 'Deterministic platform pattern matching (QuickRide, FoodDash, UrbanMove, etc.)' },
               { id: 4, text: 'Calculating 12-month consistency score & cashflow stability' },
               { id: 5, text: 'Generating canonical SHA-256 hash and server digital signature' }
             ].map((item) => {
@@ -327,6 +327,15 @@ export const WorkerGenerateReportPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Section 10 Statutory Notice */}
+          <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/25 text-amber-300/90 text-xs flex items-start space-x-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+            <p className="leading-relaxed">
+              <strong className="font-semibold text-amber-300">Statutory Notice: </strong>
+              Consistency Score is a statistical observation of historical earnings consistency across authorized accounts. It is not a credit score, credit rating, or credit guarantee. It does not reflect creditworthiness or guarantee loan approval.
+            </p>
+          </div>
 
           {/* Bottom Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800">

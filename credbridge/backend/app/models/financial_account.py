@@ -31,6 +31,7 @@ class FinancialAccount(Base):
     currency: Mapped[str] = mapped_column(String(10), default="INR", nullable=False)
     is_linked: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_selected: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     last_synced_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

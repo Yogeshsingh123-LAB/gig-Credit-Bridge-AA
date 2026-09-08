@@ -59,9 +59,12 @@ class IdentityService:
         is_new = False
 
         if not is_new_user:
-            # Check existing by identity_provider_user_id or known demo email
+            # Check existing by identity_provider_user_id or name or known demo email
+            clean_email = f"{verified_name.lower().replace(' ', '.')}@demo.credbridge.internal"
             user = db.query(User).filter(
                 (User.identity_provider_user_id == uid_mask) | 
+                (User.name == verified_name) |
+                (User.email == clean_email) |
                 (User.email == "ravi.worker@example.com")
             ).first()
 

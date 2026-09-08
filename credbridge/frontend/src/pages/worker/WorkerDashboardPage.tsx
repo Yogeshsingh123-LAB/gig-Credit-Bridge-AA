@@ -63,6 +63,24 @@ export const WorkerDashboardPage: React.FC = () => {
   const selectedAccountsCount = bankAccounts.filter(a => a.is_selected).length || bankAccounts.length || 2;
   const latestReportId = latestReport?.report_id || latestReport?.report_number || 'None yet';
 
+  const formatISTDate = (isoStr?: string) => {
+    if (!isoStr) return '';
+    try {
+      const d = new Date(isoStr);
+      return d.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+      }) + ' IST';
+    } catch {
+      return isoStr;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Personalized Header */}
@@ -76,12 +94,12 @@ export const WorkerDashboardPage: React.FC = () => {
             Welcome back, {workerName}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            Your financial verification workspace — powered by explicit worker consent.
+            Your financial verification workspace — powered by authorized financial data.
           </p>
         </div>
 
         <Link
-          to="/worker/consent"
+          to="/worker/bank-accounts"
           className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/15 cursor-pointer shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
@@ -111,7 +129,7 @@ export const WorkerDashboardPage: React.FC = () => {
           </div>
         </Link>
 
-        {/* 2. Latest Report (clicking downloads/opens PDF) */}
+        {/* 2. Latest Report (Section 28: displays authoritative IST timestamp) */}
         <div
           onClick={async () => {
             if (latestReport) {
@@ -130,6 +148,11 @@ export const WorkerDashboardPage: React.FC = () => {
             <div className="text-xs font-mono font-bold text-slate-200 truncate" title={latestReportId}>
               {latestReportId}
             </div>
+            {latestReport && (
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Generated: {formatISTDate(latestReport.issued_at || latestReport.generated_at)}
+              </p>
+            )}
             <p className="text-[11px] text-teal-400 font-semibold mt-1 flex items-center space-x-1">
               {latestReport ? (
                 <span>Click to download PDF ↓</span>
@@ -246,15 +269,15 @@ export const WorkerDashboardPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>
-                Income verified automatically from: {latestReport.platforms_selected?.join(', ') || 'Uber, Zomato'}
+                Income verified automatically from: {latestReport.platforms_selected?.join(', ') || 'QuickRide, FoodDash, UrbanMove'}
               </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/worker/reports" className="text-slate-300 hover:text-emerald-400 font-medium underline underline-offset-2">
-                View All Reports ({reportsCount})
+                View Reports ({reportsCount})
               </Link>
-              <Link to="/worker/consent" className="text-slate-300 hover:text-emerald-400 font-medium underline underline-offset-2">
-                Consent & Data Access
+              <Link to="/worker/bank-accounts" className="text-slate-300 hover:text-emerald-400 font-medium underline underline-offset-2">
+                Select Bank Accounts
               </Link>
             </div>
           </div>
@@ -267,11 +290,11 @@ export const WorkerDashboardPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-white">Ready to Generate Your Verified Report</h2>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md mx-auto">
-            Authorize your bank statements via Account Aggregator to produce a 12-month cryptographically signed income report for lenders.
+            Select your bank accounts to produce a 12-month cryptographically signed income report for lenders.
           </p>
           <div className="pt-2">
             <Link
-              to="/worker/consent"
+              to="/worker/bank-accounts"
               className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/15 cursor-pointer"
             >
               <span>+ Generate New Report</span>
@@ -281,19 +304,66 @@ export const WorkerDashboardPage: React.FC = () => {
         </div>
       )}
 
+      {/* Consistency Score Explanation Box & Statutory Notice (Sections 10 & 11) */}
+      <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+        <div className="flex items-start space-x-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white">How Consistency Score Works</h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Calculated deterministically from 12-month earnings data:
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <span className="font-semibold text-slate-300 block">• Monthly Volatility</span>
+            <span className="text-[11px] text-slate-400">Standard deviation vs mean earnings</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <span className="font-semibold text-slate-300 block">• Active Earning Months</span>
+            <span className="text-[11px] text-slate-400">Number of active earning months out of 12</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <span className="font-semibold text-slate-300 block">• Income Trend Direction</span>
+            <span className="text-[11px] text-slate-400">Trajectory over 12 calendar months</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+            <span className="font-semibold text-slate-300 block">• Platform Diversification</span>
+            <span className="text-[11px] text-slate-400">Inflows across authorized gig platforms</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1 text-xs text-slate-300 font-medium">
+          <span>Score range: <strong>0 to 100</strong> • Higher score indicates more predictable, consistent gig income.</span>
+        </div>
+
+        {/* Section 10 Statutory Disclaimer */}
+        <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/25 text-amber-300/90 text-xs flex items-start space-x-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+          <p className="leading-relaxed">
+            <strong className="font-semibold text-amber-300">Statutory Notice: </strong>
+            Consistency Score is a statistical observation of historical earnings consistency across authorized accounts. It is not a credit score, credit rating, or credit guarantee. It does not reflect creditworthiness or guarantee loan approval.
+          </p>
+        </div>
+      </div>
+
       {/* Quick Navigation Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
-          to="/worker/consent"
+          to="/worker/bank-accounts"
           className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between group"
         >
           <div className="space-y-1">
             <div className="flex items-center space-x-2 text-slate-200 font-semibold text-sm">
-              <Lock className="w-4 h-4 text-emerald-400" />
-              <span>Consent & Data Access</span>
+              <Building2 className="w-4 h-4 text-emerald-400" />
+              <span>Bank Accounts</span>
             </div>
             <p className="text-xs text-slate-400">
-              Review active bank consents, authorized data scope, or revoke permissions.
+              Select and manage linked bank accounts for 12-month income analysis.
             </p>
           </div>
           <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
@@ -306,10 +376,10 @@ export const WorkerDashboardPage: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center space-x-2 text-slate-200 font-semibold text-sm">
               <FileCheck className="w-4 h-4 text-teal-400" />
-              <span>My Verified Reports</span>
+              <span>Reports</span>
             </div>
             <p className="text-xs text-slate-400">
-              Access past versions, view cryptographic verification links, or revoke reports.
+              Access past 12-month reports and download cryptographically signed PDFs.
             </p>
           </div>
           <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />

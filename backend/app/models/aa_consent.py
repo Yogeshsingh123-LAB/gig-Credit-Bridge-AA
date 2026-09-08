@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date, timezone
-from sqlalchemy import String, Date, DateTime, JSON, ForeignKey, Enum as SQLEnum
+from sqlalchemy import String, Date, DateTime, JSON, ForeignKey, Enum as SQLEnum, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from app.models.enums import AAConsentStatus
@@ -42,6 +42,7 @@ class AAConsent(Base):
     )
     provider: Mapped[str] = mapped_column(String(100), default="Account Aggregator Sandbox", nullable=False)
     consent_version: Mapped[str] = mapped_column(String(20), default="v1.0", nullable=False)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     granted_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

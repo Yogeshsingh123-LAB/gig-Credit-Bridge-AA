@@ -65,6 +65,28 @@ class DigiLockerLoginResponse(BaseModel):
 from app.services.identity.identity_service import IdentityService
 identity_service = IdentityService()
 
+@router.get("/demo-users", summary="Get 10 Synthetic Demo Identities for DigiLocker Mock Mode")
+def get_demo_users():
+    """
+    Returns the 10 synthetic demo identities for DEMO MODE DigiLocker authentication.
+    """
+    from app.scripts.seed_mock_data import DEMO_WORKERS
+    return [
+        {
+            "index": w["index"],
+            "name": w["name"],
+            "masked_aadhaar": w["aadhaar"],
+            "phone": w["phone"],
+            "city": w["city"],
+            "occupation": w["occupation"],
+            "experience_months": w["experience_months"],
+            "pattern": w["pattern"],
+            "platforms": w["platforms"],
+            "accounts_count": len(w["accounts"])
+        }
+        for w in DEMO_WORKERS
+    ]
+
 @router.get("/digilocker/session", summary="Initiate DigiLocker Authentication Session")
 def get_digilocker_session():
     """

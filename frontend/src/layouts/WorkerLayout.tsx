@@ -13,9 +13,8 @@ export const WorkerLayout: React.FC = () => {
 
   const navItems = [
     { to: '/worker/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/worker/generate-report', label: 'Generate Report', icon: FilePlus2 },
-    { to: '/worker/reports', label: 'My Reports', icon: FileCheck },
-    { to: '/worker/consent', label: 'Consent & Data Access', icon: Lock },
+    { to: '/worker/bank-accounts', label: 'Generate Report', icon: FilePlus2 },
+    { to: '/worker/reports', label: 'Reports', icon: FileCheck },
     { to: '/worker/profile', label: 'Profile', icon: UserCheck },
     { to: '/worker/settings', label: 'Settings', icon: Settings },
   ];

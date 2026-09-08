@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogIn, UserPlus, Sparkles, LayoutDashboard, LogOut } from 'lucide-react';
+import { ShieldCheck, LogIn, Sparkles, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const MainLayout: React.FC = () => {
@@ -54,17 +54,10 @@ export const MainLayout: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 font-medium text-sm transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-md shadow-emerald-600/20 transition-all"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Sign In</span>
-                </Link>
-                <Link
-                  to="/register"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-md shadow-emerald-600/20 transition-all"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Register</span>
                 </Link>
               </div>
             )}

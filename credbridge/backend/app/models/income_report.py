@@ -46,7 +46,7 @@ class IncomeReport(Base):
     )
     analysis_start_date: Mapped[date] = mapped_column(Date, nullable=False)
     analysis_end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    months_analyzed: Mapped[int] = mapped_column(Integer, default=6, nullable=False)
+    months_analyzed: Mapped[int] = mapped_column(Integer, default=12, nullable=False)
 
     generated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -75,11 +75,13 @@ class IncomeReport(Base):
 
     income_trend: Mapped[str] = mapped_column(String(30), default="Stable", nullable=False)
     income_consistency: Mapped[str] = mapped_column(String(30), default="High", nullable=False)
+    consistency_score: Mapped[float] = mapped_column(Float, default=80.0, nullable=False)
+    income_volatility: Mapped[float] = mapped_column(Float, default=12.0, nullable=False)
     verification_confidence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     data_quality: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     methodology: Mapped[str] = mapped_column(
         Text,
-        default="Deterministic calculation of gig income credits filtered strictly by authorized bank accounts and date range.",
+        default="Deterministic calculation of gig income credits filtered strictly by authorized bank accounts and required 12-month period.",
         nullable=False
     )
     risk_flags: Mapped[list] = mapped_column(JSON, default=list, nullable=False)

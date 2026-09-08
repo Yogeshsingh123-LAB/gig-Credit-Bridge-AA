@@ -1,3 +1,14 @@
+import sys
+from pathlib import Path
+
+# Ensure backend and credbridge monorepo root directories are present in sys.path
+backend_dir = str(Path(__file__).resolve().parent.parent)
+credbridge_dir = str(Path(__file__).resolve().parent.parent.parent)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+if credbridge_dir not in sys.path:
+    sys.path.insert(0, credbridge_dir)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,13 +18,25 @@ from fastapi.encoders import jsonable_encoder
 from app.core.config import settings
 from app.core.logging import logger
 from app.api.v1.router import api_v1_router
+from app.db.session import engine, SessionLocal
+from app.db.base import Base
+from app.services.admin_service import seed_demo_accounts
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Application startup logging
+    # Create database tables and seed demo accounts if they do not exist
+    try:
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            seed_demo_accounts(db)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"Database auto-creation/seeding error: {e}")
+
     logger.info(f"Starting {settings.APP_NAME} in environment: {settings.APP_ENV}")
     yield
-    # Shutdown logic if needed
     logger.info(f"Shutting down {settings.APP_NAME}")
 
 app = FastAPI(
@@ -35,18 +58,25 @@ cors_origins = (
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Global Exception Handlers (Clean foundation without leaking stack traces or secrets)
+# Global Exception Handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning(f"Validation error on {request.method} {request.url.path}")
+    errors = jsonable_encoder(exc.errors())
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"status": "error", "message": "Input validation error", "details": jsonable_encoder(exc.errors())}
+        content={
+            "status": "error",
+            "message": "Input validation error",
+            "detail": errors,
+            "details": errors
+        }
     )
 
 @app.exception_handler(Exception)

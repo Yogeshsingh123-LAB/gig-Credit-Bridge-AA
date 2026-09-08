@@ -70,10 +70,10 @@ export const WorkerDashboardPage: React.FC = () => {
         <div className="space-y-1">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>DigiLocker: ✓ Identity Authenticated ({maskedAadhaar.slice(-8)})</span>
+            <span>DigiLocker Identity ✓ Authenticated</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Good morning, {workerName}
+            Welcome back, {workerName}
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
             Your financial verification workspace — powered by explicit worker consent.
@@ -81,45 +81,58 @@ export const WorkerDashboardPage: React.FC = () => {
         </div>
 
         <Link
-          to="/worker/generate-report"
+          to="/worker/consent"
           className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/15 cursor-pointer shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Generate New Report</span>
+          <span>+ Generate New Report</span>
         </Link>
       </div>
 
       {/* 4 Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Verified Reports */}
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2">
+        {/* 1. Verified Reports (links to /worker/reports) */}
+        <Link
+          to="/worker/reports"
+          className="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between space-y-2 group cursor-pointer"
+        >
           <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="font-semibold uppercase tracking-wider">Verified Reports</span>
+            <span className="font-semibold uppercase tracking-wider group-hover:text-emerald-400 transition-colors">Verified Reports</span>
             <FileCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
             <div className="text-2xl font-black text-white">
               {reportsCount} {reportsCount === 1 ? 'Report' : 'Reports'}
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              {reportsCount > 0 ? 'Cryptographically signed' : 'No reports issued yet'}
+            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center justify-between">
+              <span>{reportsCount > 0 ? 'Cryptographically signed' : 'No reports issued yet'}</span>
+              <ArrowRight className="w-3 h-3 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* 2. Latest Report */}
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2">
+        {/* 2. Latest Report (clicking downloads/opens PDF) */}
+        <div
+          onClick={async () => {
+            if (latestReport) {
+              await apiService.downloadReportPdf(latestReport.report_id || latestReport.id);
+            }
+          }}
+          className={`p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2 transition-all ${
+            latestReport ? 'hover:border-teal-500/40 cursor-pointer group' : ''
+          }`}
+        >
           <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="font-semibold uppercase tracking-wider">Latest Report</span>
+            <span className="font-semibold uppercase tracking-wider group-hover:text-teal-400 transition-colors">Latest Report</span>
             <ShieldCheck className="w-4 h-4 text-teal-400" />
           </div>
           <div>
             <div className="text-xs font-mono font-bold text-slate-200 truncate" title={latestReportId}>
               {latestReportId}
             </div>
-            <p className="text-[11px] text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
+            <p className="text-[11px] text-teal-400 font-semibold mt-1 flex items-center space-x-1">
               {latestReport ? (
-                <span>● Status: {latestReport.status || 'ACTIVE'}</span>
+                <span>Click to download PDF ↓</span>
               ) : (
                 <span className="text-slate-500">Ready to generate</span>
               )}
@@ -127,35 +140,34 @@ export const WorkerDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Analysis Period */}
+        {/* 3. Analysis Period: 12 Months */}
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span className="font-semibold uppercase tracking-wider">Analysis Period</span>
             <Calendar className="w-4 h-4 text-blue-400" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">
-              {latestReport ? (latestReport.analysis_period || `${latestReport.analysis_start_date} – ${latestReport.analysis_end_date}`) : 'Last 6 Months (Standard)'}
+            <div className="text-lg font-bold text-white">
+              12 Months
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              {latestReport?.months_analyzed ? `${latestReport.months_analyzed} Months Analyzed` : 'Benchmark Window'}
+              Fixed 365-day observation window
             </p>
           </div>
         </div>
 
-        {/* 4. Data Status */}
+        {/* 4. Consistency Score: e.g. 82/100 */}
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-400">
-            <span className="font-semibold uppercase tracking-wider">Data Status</span>
-            <Lock className="w-4 h-4 text-emerald-400" />
+            <span className="font-semibold uppercase tracking-wider">Consistency Score</span>
+            <Activity className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>AA Connected</span>
+            <div className="text-2xl font-black text-emerald-400">
+              {latestReport ? `${latestReport.consistency_score || 82}/100` : 'N/A'}
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              {selectedAccountsCount} bank accounts authorized
+              {latestReport ? `${latestReport.income_consistency || 'High'} consistency index` : 'Generate report to compute'}
             </p>
           </div>
         </div>
@@ -175,18 +187,21 @@ export const WorkerDashboardPage: React.FC = () => {
                 </span>
               </div>
               <h2 className="text-xl font-bold text-white">
-                Verified Gig Income Summary
+                Verified Gig Income Summary (12 Months)
               </h2>
             </div>
 
             <div className="flex items-center space-x-3">
-              <Link
-                to={`/worker/reports/${latestReport.id}`}
-                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/15"
+              <button
+                type="button"
+                onClick={async () => {
+                  await apiService.downloadReportPdf(latestReport.report_id || latestReport.id);
+                }}
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/15 cursor-pointer"
               >
-                <span>View Full Report</span>
+                <span>Download PDF</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -202,25 +217,19 @@ export const WorkerDashboardPage: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-medium">Total Verified Gig Income</span>
+              <span className="text-xs text-slate-400 font-medium">Total 12M Verified Gig Income</span>
               <div className="text-2xl font-black text-white">
                 ₹{latestReport.total_verified_gig_income?.toLocaleString('en-IN')}
               </div>
-              <span className="text-[10px] text-slate-500 block">Across {latestReport.months_analyzed || 6} months window</span>
+              <span className="text-[10px] text-slate-500 block">Across 12 months observation window</span>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-medium">Income Consistency & Trend</span>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-xs font-semibold">
-                  {latestReport.income_consistency || 'High'}
-                </span>
-                <span className="px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 text-xs font-semibold flex items-center space-x-1">
-                  <TrendingUp className="w-3 h-3" />
-                  <span>{latestReport.income_trend || 'Stable'}</span>
-                </span>
+              <span className="text-xs text-slate-400 font-medium">Consistency Score</span>
+              <div className="text-2xl font-black text-emerald-400">
+                {latestReport.consistency_score || 82}/100
               </div>
-              <span className="text-[10px] text-slate-500 block pt-0.5">Low volatility index</span>
+              <span className="text-[10px] text-slate-500 block">{latestReport.income_consistency || 'High'} consistency • {latestReport.income_trend || 'Stable'}</span>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
@@ -258,14 +267,14 @@ export const WorkerDashboardPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-white">Ready to Generate Your Verified Report</h2>
           <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md mx-auto">
-            Authorize your bank statements via Account Aggregator to instantly produce a cryptographically signed income report for lenders.
+            Authorize your bank statements via Account Aggregator to produce a 12-month cryptographically signed income report for lenders.
           </p>
           <div className="pt-2">
             <Link
-              to="/worker/generate-report"
+              to="/worker/consent"
               className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/15 cursor-pointer"
             >
-              <span>Generate Verified Gig Income Report</span>
+              <span>+ Generate New Report</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

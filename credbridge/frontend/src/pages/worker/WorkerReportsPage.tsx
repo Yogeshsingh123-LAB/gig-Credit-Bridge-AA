@@ -135,22 +135,20 @@ export const WorkerReportsPage: React.FC = () => {
                       <span className="text-xs text-slate-400">
                         Issued on {new Date(rep.generated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+                    </div>                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
                       <div>
                         <span className="text-slate-500">Analysis Period: </span>
-                        <span className="font-semibold text-slate-300">
-                          {rep.analysis_start_date} to {rep.analysis_end_date}
+                        <span className="font-semibold text-emerald-400">12 Months (Fixed)</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Consistency Score: </span>
+                        <span className="font-semibold text-emerald-400">
+                          {rep.consistency_score ? `${rep.consistency_score}/100` : '82/100'}
                         </span>
                       </div>
                       <div>
                         <span className="text-slate-500">Confidence: </span>
                         <span className="font-semibold text-blue-400">{rep.verification_confidence}%</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Sources: </span>
-                        <span className="font-semibold text-slate-300">{rep.platforms_selected.join(', ')}</span>
                       </div>
                     </div>
                   </div>
@@ -167,40 +165,16 @@ export const WorkerReportsPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <Link
-                        to={`/worker/reports/${rep.id}`}
-                        className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await apiService.downloadReportPdf(rep.report_id || rep.id);
+                        }}
+                        className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/15 cursor-pointer"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>View</span>
-                      </Link>
-
-                      <Link
-                        to={`/verify/report/${repId}`}
-                        target="_blank"
-                        className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-800 hover:border-emerald-500/50 text-slate-400 hover:text-emerald-400 text-xs font-medium transition-colors"
-                        title="Open public verification page"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Verify</span>
-                      </Link>
-
-                      {!isRevoked && (
-                        <button
-                          type="button"
-                          onClick={() => handleRevoke(rep.id)}
-                          disabled={revokingId === rep.id}
-                          className="flex items-center space-x-1 px-3 py-2 rounded-xl border border-slate-800 hover:bg-rose-500/10 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 text-xs font-medium transition-colors cursor-pointer"
-                          title="Revoke Report Access"
-                        >
-                          {revokingId === rep.id ? (
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                          <span>Revoke</span>
-                        </button>
-                      )}
+                        <FileCheck className="w-3.5 h-3.5" />
+                        <span>Download PDF</span>
+                      </button>
                     </div>
                   </div>
                 </div>

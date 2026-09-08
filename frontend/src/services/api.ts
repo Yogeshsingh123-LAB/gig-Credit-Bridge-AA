@@ -271,6 +271,20 @@ export const apiService = {
     const res = await apiClient.get<IncomeReportDetail>(`/api/v1/reports/${reportId}`);
     return res.data;
   },
+  downloadReportPdf: async (reportId: string) => {
+    const res = await apiClient.get(`/api/v1/reports/${reportId}/pdf`, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `CredBridge_Report_${reportId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
   getIncomeReportPdfData: async (reportId: string): Promise<IncomeReportPdfPayload> => {
     const res = await apiClient.get<IncomeReportPdfPayload>(`/api/v1/reports/${reportId}/pdf-data`);
     return res.data;

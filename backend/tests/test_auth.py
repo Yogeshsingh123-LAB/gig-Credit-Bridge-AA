@@ -1,38 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.main import app
-from app.db.base import Base
-from app.db.session import get_db
 from app.models.enums import UserRole
 from app.models.user import User
 from app.core.security import hash_password, create_access_token
 from datetime import timedelta
 
-# In-memory SQLite engine for unit tests
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test_auth.db"
-test_engine = create_engine(
-    SQLALCHEMY_TEST_DATABASE_URL, 
-    connect_args={"check_same_thread": False}
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
-
-@pytest.fixture(autouse=True)
-def setup_test_db():
-    Base.metadata.create_all(bind=test_engine)
-    yield
-    Base.metadata.drop_all(bind=test_engine)
 
 def test_register_worker_success():
     payload = {
@@ -168,7 +142,6 @@ def test_get_me_missing_token():
     assert response.status_code == 401
 
 def test_get_me_expired_token():
-    # Generate expired token
     token = create_access_token(subject="fake-user-id", role="WORKER", expires_delta=timedelta(seconds=-10))
     response = client.get("/api/v1/auth/me", headers={
         "Authorization": f"Bearer {token}"
@@ -215,3 +188,56 @@ def test_role_authorization_matrix():
     # Lender accesses /test-worker -> 403 Forbidden
     res = client.get("/api/v1/auth/test-worker", headers={"Authorization": f"Bearer {lender_token}"})
     assert res.status_code == 403
+
+def test_login_email_case_normalization():
+    # Register mixed-case email
+    reg_res = client.post("/api/v1/auth/register", json={
+        "name": "Case Test User",
+        "email": "CaseUser.Test@Example.Com",
+        "password": "Password123!",
+        "role": "WORKER"
+    })
+    assert reg_res.status_code == 201
+
+    # Login using uppercase email
+    login_res1 = client.post("/api/v1/auth/login", json={
+        "email": "CASEUSER.TEST@EXAMPLE.COM",
+        "password": "Password123!"
+    })
+    assert login_res1.status_code == 200
+    assert "access_token" in login_res1.json()
+
+    # Login using lowercase email
+    login_res2 = client.post("/api/v1/auth/login", json={
+        "email": "caseuser.test@example.com",
+        "password": "Password123!"
+    })
+    assert login_res2.status_code == 200
+
+def test_login_inactive_user():
+    from tests.conftest import TestingSessionLocal
+    db = TestingSessionLocal()
+    try:
+        reg_res = client.post("/api/v1/auth/register", json={
+            "name": "Inactive User",
+            "email": "inactive.user@example.com",
+            "password": "Password123!",
+            "role": "WORKER"
+        })
+        assert reg_res.status_code == 201
+        
+        # Deactivate user in DB directly
+        u = db.query(User).filter(User.email == "inactive.user@example.com").first()
+        if u:
+            u.is_active = False
+            db.commit()
+
+        login_res = client.post("/api/v1/auth/login", json={
+            "email": "inactive.user@example.com",
+            "password": "Password123!"
+        })
+        assert login_res.status_code == 403
+        assert "inactive" in login_res.json()["detail"].lower()
+    finally:
+        db.close()
+

@@ -251,3 +251,49 @@ def test_worker_data_isolation_and_ownership(worker_auth_headers, other_worker_a
     # Worker 2 tries to access Worker 1's report -> 404 unauthorized
     unauth_res = client.get(f"/api/v1/reports/{rep_id}", headers=other_worker_auth_headers)
     assert unauth_res.status_code == 404
+
+def test_simplified_workflow_digilocker_pdf_and_12m_metrics():
+    # 1. DigiLocker session endpoint
+    sess_res = client.get("/api/v1/auth/digilocker/session")
+    assert sess_res.status_code == 200
+    assert sess_res.json()["mode"] == "DEMO MODE"
+
+    # 2. Authenticate worker via DigiLocker passwordless
+    dl_login = client.post("/api/v1/auth/digilocker", json={
+        "name": "Ravi Kumar",
+        "masked_aadhaar": "XXXXXXXX4821",
+        "is_new_user": False
+    })
+    assert dl_login.status_code == 200
+    token = dl_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 3. Financial accounts aliases
+    acc_res = client.get("/api/v1/financial/accounts", headers=headers)
+    assert acc_res.status_code == 200
+    accounts = acc_res.json()
+    assert len(accounts) >= 1
+    selected_id = accounts[0]["id"]
+
+    sel_res = client.post("/api/v1/financial/accounts/select", json={
+        "selected_account_ids": [selected_id]
+    }, headers=headers)
+    assert sel_res.status_code == 200
+
+    # 4. Generate 12-month report with consistency score
+    rep_res = client.post("/api/v1/reports/generate", json={}, headers=headers)
+    assert rep_res.status_code == 201
+    rep_data = rep_res.json()
+    assert rep_data["months_analyzed"] == 12
+    assert "consistency_score" in rep_data
+    assert 0 <= rep_data["consistency_score"] <= 100
+    assert rep_data["report_id"].startswith("CBR-")
+
+    report_id = rep_data["report_id"]
+
+    # 5. Direct PDF generation and download
+    pdf_res = client.get(f"/api/v1/reports/{report_id}/pdf", headers=headers)
+    assert pdf_res.status_code == 200
+    assert pdf_res.headers["content-type"] == "application/pdf"
+    assert pdf_res.content.startswith(b"%PDF-")
+    assert len(pdf_res.content) > 1000  # Valid binary PDF stream

@@ -275,6 +275,8 @@ export interface ProcessDataResponse {
   total_gig_income: number;
   average_monthly_gig_income: number;
   months_analyzed: number;
+  consistency_score?: number;
+  income_volatility?: number;
   monthly_breakdown: Array<{ month: string; amount: number }>;
   platform_breakdown: Array<{ platform: string; amount: number; percentage: number }>;
   verification_confidence: number;
@@ -301,6 +303,8 @@ export interface IncomeReportDetail {
   verified_average_monthly_gig_income: number;
   total_verified_gig_income: number;
   months_analyzed?: number;
+  consistency_score?: number;
+  income_volatility?: number;
   income_trend?: string;
   income_consistency?: string;
   monthly_breakdown: Array<{ month: string; amount: number }>;

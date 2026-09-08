@@ -12,6 +12,7 @@ import { VerifyReportPage } from '../pages/VerifyReportPage';
 
 import { WorkerDashboardPage } from '../pages/worker/WorkerDashboardPage';
 import { WorkerGenerateReportPage } from '../pages/worker/WorkerGenerateReportPage';
+import { WorkerBankAccountsPage } from '../pages/worker/WorkerBankAccountsPage';
 import { WorkerReportsPage } from '../pages/worker/WorkerReportsPage';
 import { WorkerReportPreviewPage } from '../pages/worker/WorkerReportPreviewPage';
 import { WorkerConsentPage } from '../pages/worker/WorkerConsentPage';
@@ -58,7 +59,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
+        <Route path="register" element={<Navigate to="/login" replace />} />
+        <Route path="signup" element={<Navigate to="/login" replace />} />
         {/* Public Report Verification Routes */}
         <Route path="verify/report" element={<VerifyReportPage />} />
         <Route path="verify/report/:reportId" element={<VerifyReportPage />} />
@@ -76,10 +78,11 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<WorkerDashboardPage />} />
+        <Route path="consent" element={<WorkerConsentPage />} />
+        <Route path="bank-accounts" element={<WorkerBankAccountsPage />} />
         <Route path="generate-report" element={<WorkerGenerateReportPage />} />
         <Route path="reports" element={<WorkerReportsPage />} />
         <Route path="reports/:id" element={<WorkerReportPreviewPage />} />
-        <Route path="consent" element={<WorkerConsentPage />} />
         <Route path="profile" element={<WorkerProfilePage />} />
         <Route path="settings" element={<WorkerSettingsPage />} />
 

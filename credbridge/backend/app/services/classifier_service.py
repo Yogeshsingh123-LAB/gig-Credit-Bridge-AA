@@ -9,6 +9,46 @@ class PlatformPatternMatcher:
     """
 
     PLATFORM_PATTERNS: Dict[str, List[str]] = {
+        "QuickRide": [
+            r"\bquickride\b",
+            r"quick\s*ride",
+            r"quickride\s*payout"
+        ],
+        "FoodDash": [
+            r"\bfooddash\b",
+            r"food\s*dash",
+            r"fooddash\s*settlement",
+            r"fooddash\s*partner"
+        ],
+        "UrbanMove": [
+            r"\burbanmove\b",
+            r"urban\s*move",
+            r"urbanmove\s*logistics",
+            r"urbanmove\s*payout"
+        ],
+        "ParcelGo": [
+            r"\bparcelgo\b",
+            r"parcel\s*go",
+            r"parcelgo\s*express",
+            r"parcelgo\s*delivery"
+        ],
+        "TaskKart": [
+            r"\btaskkart\b",
+            r"task\s*kart",
+            r"taskkart\s*services",
+            r"taskkart\s*payout"
+        ],
+        "Local Delivery Services": [
+            r"local\s*delivery\s*services",
+            r"local\s*courier\s*settlement",
+            r"express\s*delivery\s*partner"
+        ],
+        "Other Identified Gig Income": [
+            r"gig\s*income",
+            r"gig\s*payment",
+            r"freelance\s*gig",
+            r"platform\s*disbursement"
+        ],
         "Uber": [
             r"\buber\b",
             r"uber\s*technologies",
@@ -67,7 +107,16 @@ class PlatformPatternMatcher:
         r"upi/cr/[a-z\s]+/(?:transfer|p2p|personal)",
         r"self\s*transfer",
         r"fund\s*transfer",
-        r"received\s+from"
+        r"received\s+from",
+        r"own\s*account\s*transfer",
+        r"internal\s*transfer",
+        r"hdfc\s*(?:to|->)\s*sbi",
+        r"sbi\s*(?:to|->)\s*hdfc",
+        r"icici\s*(?:to|->)\s*axis",
+        r"axis\s*(?:to|->)\s*kotak",
+        r"family\s*transfer",
+        r"friend\s*transfer",
+        r"personal\s*transfer"
     ]
 
     SALARY_PATTERNS = [
@@ -75,6 +124,28 @@ class PlatformPatternMatcher:
         r"\bpayroll\b",
         r"corp(?:orate)?\s+salary",
         r"monthly\s+salary"
+    ]
+
+    LOAN_PATTERNS = [
+        r"\bloan\b",
+        r"personal\s*loan",
+        r"loan\s*disbursement",
+        r"credit\s*line",
+        r"instant\s*credit"
+    ]
+
+    CASH_DEPOSIT_PATTERNS = [
+        r"cash\s*deposit",
+        r"cdm\s*deposit",
+        r"branch\s*cash",
+        r"cash\s*credit"
+    ]
+
+    REFUND_PATTERNS = [
+        r"\brefund\b",
+        r"cashback",
+        r"reversal",
+        r"reversed"
     ]
 
     EXPENSE_PATTERNS = [
@@ -90,7 +161,13 @@ class PlatformPatternMatcher:
         r"groceries",
         r"service\s*center",
         r"bike\s*repair",
-        r"maintenance"
+        r"maintenance",
+        r"grocery",
+        r"rent",
+        r"electricity",
+        r"utility",
+        r"shopping",
+        r"restaurant"
     ]
 
     @classmethod

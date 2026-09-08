@@ -59,7 +59,18 @@ class DigiLockerLoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     is_new_user: bool
+    mode: Optional[str] = "DEMO MODE"
     user: UserResponse
+
+from app.services.identity.identity_service import IdentityService
+identity_service = IdentityService()
+
+@router.get("/digilocker/session", summary="Initiate DigiLocker Authentication Session")
+def get_digilocker_session():
+    """
+    Returns session initialization details, including active mode (DEMO MODE vs PRODUCTION).
+    """
+    return identity_service.initiate_digilocker_auth()
 
 @router.post("/digilocker", response_model=DigiLockerLoginResponse, summary="Authenticate Worker via DigiLocker")
 @router.post("/digilocker-login", response_model=DigiLockerLoginResponse, summary="Authenticate Worker via DigiLocker")
@@ -69,82 +80,22 @@ def digilocker_login(req: DigiLockerLoginRequest, db: Session = Depends(get_db))
     If the worker exists, returns JWT token directly.
     If new user, provisions worker profile with verified Aadhaar metadata.
     """
-    is_new = False
-    if req.is_new_user:
-        new_id = uuid.uuid4().hex[:8]
-        user = User(
-            name=req.name or "Sandip Roy",
-            email=f"worker.{new_id}@digilocker.credbridge.internal",
-            password_hash=hash_password("DigiLockerAuth@2026"),
-            role=UserRole.WORKER,
-            is_active=True
-        )
-        db.add(user)
-        db.flush()
-        wp = WorkerProfile(
-            user_id=user.id,
-            phone=req.phone or "+91 98111 22334",
-            city=req.city or "Bengaluru",
-            occupation=req.occupation or "Gig Delivery Partner",
-            experience_months=req.experience_months or 12,
-            profile_completion=50.0,
-            identity_status="VERIFIED",
-            identity_source="DigiLocker",
-            identity_verified_at=datetime.now(timezone.utc),
-            masked_aadhaar=req.masked_aadhaar or "XXXXXXXX9182",
-            identity_name=req.name or "Sandip Roy"
-        )
-        db.add(wp)
-        db.commit()
-        db.refresh(user)
-        is_new = True
-    else:
-        # Resolve existing worker (defaulting to demo account)
-        user = db.query(User).filter(User.email == "ravi.worker@example.com").first()
-        if not user:
-            # Fallback to any worker user
-            user = db.query(User).filter(User.role == UserRole.WORKER).first()
-        if not user:
-            # Provision Ravi Kumar if DB was completely empty
-            user = User(
-                name="Ravi Kumar",
-                email="ravi.worker@example.com",
-                password_hash=hash_password("Password123!"),
-                role=UserRole.WORKER,
-                is_active=True
-            )
-            db.add(user)
-            db.flush()
-            wp = WorkerProfile(
-                user_id=user.id,
-                phone="+91 98765 43210",
-                city="Bengaluru",
-                occupation="Gig Delivery Partner",
-                experience_months=18,
-                profile_completion=100.0,
-                identity_status="VERIFIED",
-                identity_source="DigiLocker",
-                identity_verified_at=datetime.now(timezone.utc),
-                masked_aadhaar="XXXXXXXX4821",
-                identity_name="Ravi Kumar"
-            )
-            db.add(wp)
-            db.commit()
-            db.refresh(user)
-        else:
-            # Ensure worker profile identity status is VERIFIED
-            if user.worker_profile:
-                user.worker_profile.identity_status = "VERIFIED"
-                user.worker_profile.identity_source = "DigiLocker"
-                user.worker_profile.masked_aadhaar = user.worker_profile.masked_aadhaar or "XXXXXXXX4821"
-                user.worker_profile.identity_name = user.worker_profile.identity_name or user.name
-                db.commit()
-
-    access_token = create_user_token(user)
+    auth_result = identity_service.authenticate_or_register_worker(
+        db=db,
+        name=req.name,
+        masked_aadhaar=req.masked_aadhaar,
+        session_id=req.session_id,
+        is_new_user=req.is_new_user or False,
+        city=req.city,
+        occupation=req.occupation,
+        phone=req.phone
+    )
+    user = db.query(User).filter(User.id == auth_result["user"]["id"]).first()
     return DigiLockerLoginResponse(
-        access_token=access_token,
-        token_type="bearer",
-        is_new_user=is_new,
+        access_token=auth_result["access_token"],
+        token_type=auth_result["token_type"],
+        is_new_user=auth_result["is_new_user"],
+        mode=auth_result.get("mode", "DEMO MODE"),
         user=user
     )
 

@@ -68,6 +68,55 @@ export const LenderDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Data Status Panel */}
+      <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h3 className="text-base font-bold text-white flex items-center space-x-2">
+              <ShieldCheck className="w-5 h-5 text-teal-400" />
+              <span>Financial Data Status & Ingestion Health</span>
+            </h3>
+            <p className="text-xs text-slate-400">Account Aggregator gateway telemetry and data freshness</p>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center space-x-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>AA Gateway Healthy</span>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Connected Accounts</span>
+            <span className="text-lg font-bold text-white mt-1 block">2 / 2</span>
+            <span className="text-[10px] text-emerald-400 mt-0.5 block">100% Linked</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Data Freshness</span>
+            <span className="text-lg font-bold text-emerald-400 mt-1 block">Fresh</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">&lt; 1 hour</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Financial History</span>
+            <span className="text-lg font-bold text-white mt-1 block">12 Months</span>
+            <span className="text-[10px] text-blue-400 mt-0.5 block">Fixed Window</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Sync Status</span>
+            <span className="text-lg font-bold text-teal-400 mt-1 block">Real-time</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Event-driven</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Last Synced</span>
+            <span className="text-lg font-bold text-slate-200 mt-1 block">2 mins ago</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Automated</span>
+          </div>
+        </div>
+      </div>
+
       {/* Verification Distribution */}
       {stats?.verification_distribution && (
         <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">

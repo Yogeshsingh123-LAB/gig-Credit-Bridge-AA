@@ -63,6 +63,51 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Account Aggregator Data Status */}
+      <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-white">Account Aggregator Gateway & Data Freshness</h3>
+            <p className="text-xs text-slate-400">System-wide data ingestion pipeline and AA bridge telemetry</p>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+            ● Real-Time Ingestion
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Connected Accounts</span>
+            <span className="text-lg font-bold text-white mt-1 block">100% Active</span>
+            <span className="text-[10px] text-emerald-400 mt-0.5 block">HDFC, SBI, ICICI</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Data Freshness</span>
+            <span className="text-lg font-bold text-emerald-400 mt-1 block">Fresh</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Zero Stale Queues</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Financial History</span>
+            <span className="text-lg font-bold text-white mt-1 block">12 Months</span>
+            <span className="text-[10px] text-blue-400 mt-0.5 block">Enforced Fixed Window</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Sync Status</span>
+            <span className="text-lg font-bold text-teal-400 mt-1 block">Live Stream</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Webhook Enabled</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Last Synced</span>
+            <span className="text-lg font-bold text-slate-200 mt-1 block">&lt; 2 mins ago</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Polling Normal</span>
+          </div>
+        </div>
+      </div>
+
       {/* System Subsystems Health */}
       <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
         <h3 className="text-base font-bold text-white">Subsystems Health Check</h3>

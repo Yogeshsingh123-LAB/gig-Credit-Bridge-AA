@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Lock, ShieldCheck, CheckCircle2, XCircle, AlertTriangle,
   Building2, Calendar, FileText, ArrowRight, RefreshCw, Trash2
@@ -75,6 +76,9 @@ export const WorkerConsentPage: React.FC = () => {
     }
   };
 
+  const [consentAgreed, setConsentAgreed] = useState(false);
+  const navigate = useNavigate();
+
   return (
     <div className="max-w-5xl mx-auto py-2 space-y-6">
       {/* Top Banner */}
@@ -84,9 +88,9 @@ export const WorkerConsentPage: React.FC = () => {
             <Lock className="w-3.5 h-3.5" />
             <span>Worker Consent Governance</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Consent & Data Access</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Financial Data Consent</h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-            Full visibility and real-time revocation rights over your authorized bank statements and institutional access.
+            Explicit, informed worker consent is required before CredBridge retrieves any financial statements.
           </p>
         </div>
       </div>
@@ -97,6 +101,99 @@ export const WorkerConsentPage: React.FC = () => {
           <span>{message}</span>
         </div>
       )}
+
+      {/* Primary Financial Data Consent Card */}
+      <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-500/30 shadow-xl shadow-emerald-950/20 space-y-6">
+        <div className="flex items-start space-x-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">Explicit Financial Data Authorization</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Review what data CredBridge accesses, what is never stored, and what gets produced.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 1. What data is accessed */}
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>What Is Accessed</span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              12 months of observed bank statements via RBI-regulated Account Aggregator (AA) network for authorized accounts only.
+            </p>
+          </div>
+
+          {/* 2. What data is NOT stored */}
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+              <span>What Is NOT Stored</span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              CredBridge never stores raw bank statements, transaction logs, account passwords, credentials, or actual bank balances.
+            </p>
+          </div>
+
+          {/* 3. What is generated & stored */}
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-teal-400"></span>
+              <span>What Is Stored</span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Only the standardized Verified Gig Income Report summary and its tamper-evident SHA-256 cryptographic hash.
+            </p>
+          </div>
+        </div>
+
+        {/* Consent Declaration Statement & Checkbox */}
+        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-3">
+          <label className="flex items-start space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="consent-checkbox"
+              checked={consentAgreed}
+              onChange={(e) => setConsentAgreed(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-emerald-500 cursor-pointer"
+            />
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-slate-200 block">
+                I authorize CredBridge to retrieve and analyze my financial data for the last 12 months for the sole purpose of generating a Verified Gig Income Report.
+              </span>
+              <span className="text-[11px] text-slate-400 block">
+                I understand that this consent is revocable at any time and that my data is handled under end-to-end cryptographic integrity.
+              </span>
+            </div>
+          </label>
+        </div>
+
+        {/* Action Button */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <span className="text-xs text-slate-400">
+            Next: Select authorized bank accounts to include in the 12-month analysis.
+          </span>
+          <button
+            type="button"
+            id="consent-continue-btn"
+            disabled={!consentAgreed}
+            onClick={() => navigate('/worker/bank-accounts')}
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <span>Continue to Bank Accounts</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Secondary Consent Governance Section */}
+      <div className="pt-4">
+        <h3 className="text-sm font-bold text-white mb-3">Active Consents & Governance</h3>
+      </div>
 
       {/* Tabs */}
       <div className="flex border-b border-slate-800 gap-6">

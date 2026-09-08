@@ -17,14 +17,6 @@ export const WorkerReportPreviewPage: React.FC = () => {
   const [report, setReport] = useState<IncomeReportDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRevoking, setIsRevoking] = useState<boolean>(false);
-
-  // Sharing Modal State
-  const [showShareModal, setShowShareModal] = useState<boolean>(false);
-  const [recipientName, setRecipientName] = useState<string>('ABC Finance Ltd.');
-  const [includeRawTxs, setIncludeRawTxs] = useState<boolean>(false);
-  const [shareSuccess, setShareSuccess] = useState<boolean>(false);
-  const [isSharing, setIsSharing] = useState<boolean>(false);
 
   useEffect(() => {
     loadReport();
@@ -52,46 +44,13 @@ export const WorkerReportPreviewPage: React.FC = () => {
     }
   };
 
-  const handleDownloadPdf = () => {
-    window.print();
-  };
-
-  const handleRevokeReport = async () => {
+  const handleDownloadPdf = async () => {
     if (!report) return;
-    const confirmRevoke = window.confirm(
-      `Are you sure you want to revoke report ${report.report_id || report.report_number}? Once revoked, lenders verifying this report will be notified that consent has been withdrawn.`
-    );
-    if (!confirmRevoke) return;
-
-    setIsRevoking(true);
     try {
-      await apiService.revokeIncomeReport(report.id);
-      await loadReport();
-    } catch (err: any) {
-      alert(err?.response?.data?.detail || 'Failed to revoke report.');
-    } finally {
-      setIsRevoking(false);
-    }
-  };
-
-  const handleShareSubmit = async () => {
-    if (!report) return;
-    setIsSharing(true);
-    try {
-      await apiService.shareIncomeReport(report.id, {
-        recipient_name: recipientName,
-        include_raw_transactions: includeRawTxs,
-        duration_days: 30
-      });
-      setShareSuccess(true);
-      setTimeout(() => {
-        setShowShareModal(false);
-        setShareSuccess(false);
-      }, 2000);
-    } catch (err: any) {
-      alert('Failed to share report: ' + (err?.response?.data?.detail || 'Unknown error'));
-    } finally {
-      setIsSharing(false);
+      await apiService.downloadReportPdf(report.report_id || report.id);
+    } catch (err) {
+      console.warn('Backend PDF download error, falling back to print:', err);
+      window.print();
     }
   };
 
@@ -105,29 +64,30 @@ export const WorkerReportPreviewPage: React.FC = () => {
 
   if (error || !report) {
     return (
-      <div className="max-w-2xl mx-auto py-12 text-center bg-slate-900 border border-slate-800 rounded-2xl p-8">
-        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-        <h2 className="text-lg font-bold text-white mb-2">Report Not Available</h2>
-        <p className="text-sm text-slate-400 mb-6">{error || 'Please generate a verified report first.'}</p>
-        <Link
-          to="/worker/generate-report"
-          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all"
+      <div className="max-w-xl mx-auto py-12 text-center space-y-4">
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">
+          {error || 'Report not found.'}
+        </div>
+        <button
+          onClick={() => navigate('/worker/reports')}
+          className="px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-semibold hover:bg-slate-700 transition-colors"
         >
-          Generate New Report
-        </Link>
+          Return to My Reports
+        </button>
       </div>
     );
   }
 
   const reportId = report.report_id || report.report_number;
   const isRevoked = report.status === 'REVOKED' || (report as any).report_status === 'REVOKED';
-  const verificationUrl = `/verify/report/${reportId}`;
+
   const canonicalHash = report.canonical_hash || 'SHA-256 Validated';
   const signature = report.signature || 'HMAC-SHA256 Server Signature';
+  const verificationUrl = `/verify/report/${report.report_id || report.report_number}`;
 
   return (
-    <div className="max-w-5xl mx-auto py-4 px-2 sm:px-4">
-      {/* Top Action Bar (Hidden in Print) */}
+    <div className="max-w-4xl mx-auto py-4">
+      {/* Top Action Bar */}
       <div className="print:hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <button
           onClick={() => navigate('/worker/reports')}
@@ -137,45 +97,15 @@ export const WorkerReportPreviewPage: React.FC = () => {
           <span>Back to My Reports</span>
         </button>
 
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          {/* Public verify link */}
-          <Link
-            to={verificationUrl}
-            target="_blank"
-            className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-emerald-400 text-xs font-semibold transition-colors"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Public Verifier</span>
-          </Link>
-
-          {!isRevoked && (
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-850 text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Share</span>
-            </button>
-          )}
-
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
           <button
+            id="download-pdf-btn"
             onClick={handleDownloadPdf}
-            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/15 cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-4 h-4" />
             <span>Download PDF</span>
           </button>
-
-          {!isRevoked && (
-            <button
-              onClick={handleRevokeReport}
-              disabled={isRevoking}
-              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl border border-slate-800 hover:bg-rose-500/10 hover:border-rose-500/30 text-rose-400 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{isRevoking ? 'Revoking...' : 'Revoke Report'}</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -442,106 +372,6 @@ export const WorkerReportPreviewPage: React.FC = () => {
           <p>CredBridge is an evidence verification infrastructure and is not a bank, NBFC, or credit rating agency. This document does not constitute a loan offer or credit guarantee. Lenders independently evaluate credit risk based on verified evidence.</p>
         </div>
       </div>
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center space-x-2">
-                <Share2 className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-base">Share Verified Report</h3>
-              </div>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {shareSuccess ? (
-              <div className="py-6 text-center space-y-2">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-                <p className="text-base font-bold text-white">Report Successfully Shared</p>
-                <p className="text-xs text-slate-400">Access granted to {recipientName} for 30 days.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1 font-semibold">Recipient Lending Institution</label>
-                  <select
-                    value={recipientName}
-                    onChange={e => setRecipientName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="ABC Finance Ltd.">ABC Finance Ltd.</option>
-                    <option value="State Bank of India (MSME Desk)">State Bank of India (MSME Desk)</option>
-                    <option value="HDFC Bank Retail Lending">HDFC Bank Retail Lending</option>
-                    <option value="Bajaj Finserv Personal Loans">Bajaj Finserv Personal Loans</option>
-                  </select>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
-                  <p className="font-semibold text-slate-300">Verified elements to be shared:</p>
-                  <div className="space-y-1 text-slate-400">
-                    <p className="flex items-center space-x-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Verified Average Monthly Income & Totals</span>
-                    </p>
-                    <p className="flex items-center space-x-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Monthly Breakdown & Consistency Trend</span>
-                    </p>
-                    <p className="flex items-center space-x-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Cryptographic SHA-256 Signature Verification Link</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2.5">
-                  <input
-                    type="checkbox"
-                    id="raw_txs"
-                    checked={includeRawTxs}
-                    onChange={e => setIncludeRawTxs(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-500 bg-slate-950 border-slate-700"
-                  />
-                  <label htmlFor="raw_txs" className="text-xs text-slate-400">
-                    Include raw statement transactions (Optional, default disabled)
-                  </label>
-                </div>
-
-                <p className="text-[11px] text-slate-500">
-                  Worker consent can be revoked at any time from your Consent & Data Access management tab.
-                </p>
-
-                <div className="flex space-x-3 pt-2">
-                  <button
-                    onClick={() => setShowShareModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleShareSubmit}
-                    disabled={isSharing}
-                    className="flex-1 flex items-center justify-center space-x-1.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all disabled:opacity-50"
-                  >
-                    {isSharing ? <RefreshCw className="w-4 h-4 animate-spin" /> : (
-                      <>
-                        <Share2 className="w-4 h-4" />
-                        <span>Authorize Sharing</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

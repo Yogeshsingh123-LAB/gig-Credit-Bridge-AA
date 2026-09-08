@@ -21,22 +21,24 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: credbridge-backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
     ports:
-      - "8000:8000"
+      - "8001:8001"
     environment:
       - DATABASE_URL=postgresql://credbridge_user:credbridge_password@postgres:5432/credbridge_db
       - SECRET_KEY=dev-secret-key-change-in-production
       - FRONTEND_URL=http://localhost:5173
+      - PYTHONPATH=/app:/app/backend
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
+      - ./intelligence:/app/intelligence
 
   frontend:
     build:
@@ -47,7 +49,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8001
     depends_on:
       - backend
 

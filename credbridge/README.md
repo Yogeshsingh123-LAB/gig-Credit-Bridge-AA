@@ -60,14 +60,24 @@ credbridge/
 ## ⚡ Quick Start
 
 ### 1-Click Launch (Windows)
-Double-click [`run.bat`](file:///c:/Users/sandi/OneDrive/Desktop/SSIT/run.bat) at the root of the project to automatically start both backend and frontend servers:
+### 1-Click Launch (Windows)
+Double-click [`run.bat`](file:///c:/Users/sandi/OneDrive/Desktop/SSIT/credbridge/run.bat) at the root of the project to select your preferred launch mode:
+- **Option [1]**: Local Launch (Python Uvicorn on port 8001 + Vite Dev Server on port 5173)
+- **Option [2]**: Docker Compose Launch (PostgreSQL + FastAPI + Vite Containers)
+- **Option [3]**: Full Automated Pytest Suite (45 Tests)
 
 ```cmd
 run.bat
 ```
 
+### Docker Compose Launch
+Run all containerized services (PostgreSQL 15 + FastAPI Backend on 8001 + React Frontend on 5173):
+```cmd
+docker compose up --build
+```
+
 - **Backend API**: `http://localhost:8001` (Swagger docs: `http://localhost:8001/docs`)
-- **Frontend App**: `http://localhost:5173` (or `http://localhost:5174`)
+- **Frontend App**: `http://localhost:5173`
 
 ---
 

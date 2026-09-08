@@ -1,19 +1,28 @@
 import React from 'react';
-import { UserCheck } from 'lucide-react';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { EmptyState } from '../../components/common/EmptyState';
+import { Badge } from '../../components/ui/Badge';
+import { Layers, ShieldCheck, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const WorkerOverviewPage: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="max-w-xl mx-auto py-12 px-6 bg-slate-900/60 border border-slate-800 rounded-2xl shadow-xl text-center space-y-4">
-      <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400">
-        <UserCheck className="w-6 h-6" />
-      </div>
-      <h2 className="text-2xl font-bold text-white">Worker Portal Foundation</h2>
-      <p className="text-xs text-slate-400">
-        Placeholder for Worker consent authorization & platform connections.
-      </p>
-      <div className="p-3 bg-slate-950/80 rounded-lg text-xs font-mono text-slate-500">
-        Route: /worker
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Worker Portal Overview"
+        subtitle="Manage your connected gig income sources, view cashflow verification status, and generate your Credit Passport."
+        badge={<Badge variant="info">Worker Portal</Badge>}
+      />
+
+      <EmptyState
+        icon={<Layers className="w-8 h-8 text-indigo-400" />}
+        title="No income sources connected"
+        description="Connect your gig platform accounts (Zomato, Uber, Swiggy, Urban Company) or bank data to start building your verified financial profile."
+        actionText="Connect Platforms"
+        onAction={() => navigate('/worker/platforms')}
+      />
     </div>
   );
 };

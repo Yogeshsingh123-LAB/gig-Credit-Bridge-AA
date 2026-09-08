@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { HealthResponse } from '../types';
+import { ApiHealthResponse } from '../types/common';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -11,9 +11,9 @@ export const apiClient = axios.create({
   timeout: 5000,
 });
 
-export const checkApiHealth = async (): Promise<HealthResponse> => {
+export const checkApiHealth = async (): Promise<ApiHealthResponse> => {
   try {
-    const response = await apiClient.get<HealthResponse>('/api/v1/health');
+    const response = await apiClient.get<ApiHealthResponse>('/health');
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

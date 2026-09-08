@@ -7,12 +7,18 @@ from app.core.logging import logger
 # Supports local PostgreSQL, Supabase, Neon, or SQLite fallback for tests
 db_url = settings.DATABASE_URL
 engine_kwargs = {}
-if db_url.startswith("sqlite"):
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
-else:
-    engine_kwargs["pool_pre_ping"] = True
 
-engine = create_engine(db_url, **engine_kwargs)
+try:
+    if db_url.startswith("sqlite"):
+        engine_kwargs["connect_args"] = {"check_same_thread": False}
+    else:
+        engine_kwargs["pool_pre_ping"] = True
+    engine = create_engine(db_url, **engine_kwargs)
+except Exception:
+    db_url = "sqlite:///./credbridge_dev.db"
+    engine_kwargs = {"connect_args": {"check_same_thread": False}}
+    engine = create_engine(db_url, **engine_kwargs)
+
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

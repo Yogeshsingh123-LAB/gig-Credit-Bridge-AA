@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from app.core.config import settings
 from app.core.logging import logger
 from app.api.v1.router import api_v1_router
@@ -45,7 +46,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.warning(f"Validation error on {request.method} {request.url.path}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"status": "error", "message": "Input validation error", "details": exc.errors()}
+        content={"status": "error", "message": "Input validation error", "details": jsonable_encoder(exc.errors())}
     )
 
 @app.exception_handler(Exception)

@@ -25,9 +25,9 @@ services:
       dockerfile: Dockerfile
     container_name: credbridge-backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
     ports:
-      - "8000:8000"
+      - "8001:8001"
     environment:
       - DATABASE_URL=postgresql://credbridge_user:credbridge_password@postgres:5432/credbridge_db
       - SECRET_KEY=dev-secret-key-change-in-production
@@ -47,7 +47,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8001
     depends_on:
       - backend
 

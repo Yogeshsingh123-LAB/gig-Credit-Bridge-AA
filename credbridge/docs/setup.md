@@ -20,7 +20,7 @@ pip install -r requirements.txt
 alembic upgrade head
 
 # Start FastAPI Uvicorn Server
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8001
 ```
 
 ### Frontend (React + Vite)
@@ -57,5 +57,5 @@ cd credbridge
 docker compose up --build
 ```
 - Frontend: `http://localhost:5173`
-- Backend API & Swagger: `http://localhost:8000/docs`
+- Backend API & Swagger: `http://localhost:8001/docs`
 - PostgreSQL Database: `localhost:5432`

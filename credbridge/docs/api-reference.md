@@ -1,125 +1,63 @@
-# CredBridge API Reference & Frontend Integration Contract (Phase 2)
+# CredBridge API Reference
 
-**Base API Path**: `/api/v1`
+FastAPI Swagger Documentation is interactively available at `/docs` and ReDoc at `/redoc`.
 
-All authentication and role authorization endpoints are mounted under `/api/v1/auth`.
+## Base URL
+`/api/v1`
 
----
+## API Route Summary
 
-## 1. Response Standards
+### Authentication (`/api/v1/auth`)
+- `POST /register`: Register a new WORKER or LENDER user. (ADMIN registration is strictly blocked).
+- `POST /login`: Authenticate email and password; returns JWT bearer access token.
+- `GET /me`: Get authenticated user identity and role.
 
-CredBridge uses standard HTTP status codes and predictable JSON response structures.
+### Profile (`/api/v1/profile`)
+- `GET /`: Get current user profile.
+- `PUT /worker`: Update worker phone, city, occupation, experience_months.
+- `PUT /lender`: Update lender organization_name, designation.
 
-### Standard Error Response
-For input validation errors (HTTP 422), authentication failures (HTTP 401), or forbidden access (HTTP 403):
-```json
-{
-  "status": "error",
-  "message": "Human-readable description of error",
-  "details": []
-}
-```
+### Gig Platforms & Demo Data (`/api/v1/platforms`)
+- `GET /`: List connected gig platforms.
+- `POST /connect`: Connect demo gig platform (Uber, Ola, Swiggy, Zomato, etc.).
+- `DELETE /{platform_id}`: Disconnect a gig platform.
+- `POST /generate-demo-data`: Generates 6-12 months of realistic synthetic income and expense transactions.
 
----
+### Transactions (`/api/v1/transactions`)
+- `GET /`: Filterable, searchable, paginated ledger of worker transactions.
+- `POST /`: Add a transaction record (amount > 0, duplicate reference ID check).
 
-## 2. Authentication API Specification
+### Financial Analytics (`/api/v1/analytics`)
+- `GET /financial-summary`: Deterministic cashflow analytics (total income, monthly average, expenses, monthly breakdown, source breakdown, volatility %, trend, data quality score).
 
-### 2.1 Register User
-- **Endpoint**: `POST /api/v1/auth/register`
-- **Authentication**: Public
-- **Allowed Roles**: `WORKER`, `LENDER` *(Public registration for `ADMIN` is strictly forbidden and returns HTTP 400)*
-- **Request Body**:
-  ```json
-  {
-    "name": "Demo Worker",
-    "email": "worker@example.com",
-    "password": "password123",
-    "role": "WORKER"
-  }
-  ```
-- **Success Response** (`201 Created`):
-  ```json
-  {
-    "id": "e2b2ead4-cee7-447b-b17a-d915f9264be4",
-    "name": "Demo Worker",
-    "email": "worker@example.com",
-    "role": "WORKER",
-    "is_active": true,
-    "worker_profile": {
-      "id": "a1b2c3d4-...",
-      "phone": null,
-      "city": null,
-      "occupation": null,
-      "experience_months": 0
-    },
-    "lender_profile": null
-  }
-  ```
+### Income Verification (`/api/v1/verification`)
+- `POST /start`: Run deterministic income verification audit.
+- `GET /latest`: Fetch latest verification audit result.
+- `GET /history`: Fetch historical verification audits.
 
----
+### Financial Readiness Score (`/api/v1/score`)
+- `POST /calculate`: Calculate 0–100 Financial Readiness Score.
+- `GET /latest`: Fetch latest Financial Readiness Score.
 
-### 2.2 Login (Obtain Access Token)
-- **Endpoint**: `POST /api/v1/auth/login`
-- **Authentication**: Public
-- **Request Body**:
-  ```json
-  {
-    "email": "worker@example.com",
-    "password": "password123"
-  }
-  ```
-- **Success Response** (`200 OK`):
-  ```json
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer"
-  }
-  ```
+### Credit Passport (`/api/v1/passport`)
+- `POST /generate`: Issue new versioned Credit Passport.
+- `GET /latest`: Fetch latest active Credit Passport.
+- `GET /history`: Fetch passport version history.
+- `GET /{passport_id}`: Fetch passport by ID.
 
----
+### Consent Management (`/api/v1/consent`)
+- `POST /grant`: Worker grants time-bound access to a lender.
+- `POST /revoke`: Worker revokes lender access immediately.
+- `GET /my-consents`: List worker's active and revoked consents.
+- `GET /lenders-list`: List registered lenders for worker selection.
 
-### 2.3 Get Current User Profile
-- **Endpoint**: `GET /api/v1/auth/me`
-- **Authentication**: Required (`Bearer <access_token>`)
-- **Headers**:
-  ```http
-  Authorization: Bearer <access_token>
-  ```
-- **Success Response** (`200 OK`):
-  ```json
-  {
-    "id": "e2b2ead4-cee7-447b-b17a-d915f9264be4",
-    "name": "Demo Worker",
-    "email": "worker@example.com",
-    "role": "WORKER",
-    "is_active": true,
-    "worker_profile": {
-      "id": "a1b2c3d4-...",
-      "phone": null,
-      "city": null,
-      "occupation": null,
-      "experience_months": 0
-    },
-    "lender_profile": null
-  }
-  ```
+### Lender Portal (`/api/v1/lenders`)
+- `GET /dashboard`: Lender dashboard metrics.
+- `GET /applicants`: List shared applicant passports.
+- `GET /applicant/{worker_id}`: View applicant financial evidence (requires active consent).
+- `POST /simulator`: Run What-If cashflow simulation.
 
----
-
-## 3. Role Authorization Matrix
-
-| Endpoint | WORKER Role | LENDER Role | ADMIN Role | Unauthenticated |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET /api/v1/auth/me` | `200 OK` | `200 OK` | `200 OK` | `401 Unauthorized` |
-| `GET /api/v1/auth/test-worker` | `200 OK` | `403 Forbidden` | `403 Forbidden` | `401 Unauthorized` |
-| `GET /api/v1/auth/test-lender` | `403 Forbidden` | `200 OK` | `403 Forbidden` | `401 Unauthorized` |
-| `GET /api/v1/auth/test-admin` | `403 Forbidden` | `403 Forbidden` | `200 OK` | `401 Unauthorized` |
-
----
-
-## 4. Admin Seeding Script
-To safely seed an initial ADMIN user without exposing public endpoints:
-```bash
-cd backend
-python scripts/create_admin.py --name "System Admin" --email "admin@credbridge.io" --password "adminpassword123"
-```
+### Admin Portal (`/api/v1/admin`)
+- `GET /dashboard`: System stats and subsystem health.
+- `GET /users`: List registered users filtered by role.
+- `GET /audit-logs`: Security audit trail logs.

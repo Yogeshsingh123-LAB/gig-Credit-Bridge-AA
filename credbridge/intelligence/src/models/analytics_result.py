@@ -4,7 +4,7 @@ Provides strongly typed Pydantic structures for income, expense, monthly, source
 """
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -63,6 +63,10 @@ class SourceAnalysis(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @property
+    def source_name(self) -> str:
+        return self.source
+
 
 class VolatilityAnalysis(BaseModel):
     coefficient_of_variation: Optional[float] = Field(default=None, description="Ratio of std dev to mean (CV)")
@@ -107,13 +111,17 @@ class FinancialAnalyticsResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    # Phase 1 Backward Compatibility Property Accessors
+    # Alias / Property Accessors for seamless cross-module access
     @property
     def total_income(self) -> float:
         return self.income.total_income
 
     @property
     def average_monthly_income(self) -> float:
+        return self.income.average_monthly_income
+
+    @property
+    def avg_monthly_income(self) -> float:
         return self.income.average_monthly_income
 
     @property
@@ -129,12 +137,48 @@ class FinancialAnalyticsResult(BaseModel):
         return self.income.maximum_monthly_income
 
     @property
+    def total_expenses(self) -> float:
+        return self.expenses.total_expenses
+
+    @property
+    def average_monthly_expenses(self) -> float:
+        return self.expenses.average_monthly_expenses
+
+    @property
+    def avg_monthly_expenses(self) -> float:
+        return self.expenses.average_monthly_expenses
+
+    @property
     def months_analyzed(self) -> int:
         return len(self.monthly_analysis)
 
     @property
     def months_with_income(self) -> int:
         return self.income.income_months
+
+    @property
+    def income_months_count(self) -> int:
+        return self.income.income_months
+
+    @property
+    def source_breakdown(self) -> List[SourceAnalysis]:
+        return self.source_analysis
+
+    @property
+    def income_volatility_pct(self) -> float:
+        return self.volatility.volatility_percentage or 0.0
+
+    @property
+    def income_volatility_class(self) -> str:
+        return self.volatility.classification.value
+
+    @property
+    def income_trend_direction(self) -> str:
+        return self.trend.direction.value
+
+    @property
+    def income_trend_pct_change(self) -> float:
+        return self.trend.percentage_change or 0.0
 
     @property
     def income_volatility_percentage(self) -> Optional[float]:

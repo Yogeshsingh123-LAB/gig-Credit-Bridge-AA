@@ -1,191 +1,111 @@
-# CredBridge ⚡
+# CRED BRIDGE ⚡
 
-> **Consent-based financial verification infrastructure for gig economy workers.**
+> *"Turn gig income into trusted financial evidence."*
 
-CredBridge provides a transparent, explainable financial profile that empowers lenders to assess gig workers (delivery partners, rideshare drivers, home service providers, freelancers) who lack traditional salary slips or conventional credit bureau footprints.
-
----
-
-## 1. Project Purpose
-The core concept of CredBridge is:
-```
-Gig Worker → Financial Data → Income Verification → Financial Analysis → Credit Passport → Lender Assessment
-```
-CredBridge does **NOT** directly approve or reject loans. It aggregates consent-driven financial streams, assesses cashflow velocity and stability, and generates a standardized **Credit Passport** for financial institutions.
+CredBridge is a production-quality financial verification monorepo platform that helps gig workers (Uber, Swiggy, Zomato, Urban Company, Blinkit, Zepto, etc.) convert fragmented earnings into verified income evidence, financial analytics, an explainable **Financial Readiness Score (0–100)**, and consent-shared **Credit Passports** for lender decision support.
 
 ---
 
-## 2. Technology Stack
+## 🚀 Key Features & Capabilities
 
-### Frontend
-- **Framework**: React 18 + Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Routing**: React Router v6
-- **HTTP Client**: Axios
-- **Icons**: Lucide React
-
-### Backend
-- **Framework**: Python 3.11 + FastAPI
-- **Server**: Uvicorn
-- **Validation**: Pydantic v2 & Pydantic Settings
-- **ORM**: SQLAlchemy 2.0
-- **Database**: PostgreSQL (supports Supabase, Neon, Docker Postgres via `DATABASE_URL`)
-
-### Development & DevOps
-- **DevOps**: Docker & Docker Compose
-- **Environment**: `.env` configuration
-- **Architecture**: REST API (/api/v1/)
+- **Consolidated Gig Earnings**: Integrates demo platform connections across Uber, Swiggy, Zomato, and Urban Company.
+- **Realistic Synthetic Data Generator**: Generates 6–12 months of realistic cashflow transactions labeled as "Demo Data".
+- **100% Deterministic Analytics Engine**: Calculates monthly income/expenses, volatility percentage, trend trajectory, and data quality score using Pandas and NumPy.
+- **Deterministic Income Verification**: Audits observed vs declared income, coverage percentage, and confidence score (`VERIFIED`, `PARTIALLY_VERIFIED`, `INSUFFICIENT_DATA`, `REVIEW_REQUIRED`).
+- **Explainable Financial Readiness Score (0–100)**: Evaluated across 6 weighted components (Consistency 25%, Stability 20%, Coverage 20%, Quality 15%, Diversification 10%, Sustainability 10%) with positive factors and attention areas.
+- **Credit Passport**: Versioned financial evidence document snapshotting verified metrics, data quality, and AI fact interpretation.
+- **Consent-Based Sharing**: Workers control who views their passport with time-bound active consent and immediate revocation (enforced with HTTP 403 Forbidden).
+- **Lender What-If Simulator**: Stress-tests applicant cashflow under hypothetical income/expense variations deterministically.
+- **Admin Portal & Security Audit Logs**: Tracks system health, user metrics, and security access logs.
+- **Responsive UI Across All Viewports**: Features mobile top header bars, hamburger buttons, and collapsible drawer overlays (tested across 320px–1920px).
 
 ---
 
-## 3. Project Structure
+## 🛠️ Technology Stack
 
-```
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts, React Router v6, Axios.
+- **Backend**: Python 3.11+, FastAPI, Uvicorn (Port 8001), SQLAlchemy 2.0 ORM, Pydantic v2, Alembic, PostgreSQL / SQLite.
+- **Intelligence**: Pandas, NumPy, Python score calculation engines.
+- **Testing**: Pytest (45 / 45 passing tests).
+- **DevOps**: Docker, Docker Compose, 1-Click Launch Script (`run.bat`).
+
+---
+
+## 📂 Monorepo Structure
+
+```text
 credbridge/
-├── frontend/
+├── frontend/             # React 18 + Vite + TypeScript SPA
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   │   ├── worker/
-│   │   │   └── lender/
-│   │   ├── layouts/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   ├── utils/
-│   │   ├── assets/
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── public/
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   └── .env.example
-│
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   ├── database/
-│   │   └── main.py
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── Dockerfile
-│
-├── database/
-│   └── README.md
-│
-├── docs/
-│   ├── architecture.md
-│   └── api.md
-│
-├── .gitignore
-├── README.md
-└── docker-compose.yml
+│   │   ├── context/      # AuthContext JWT session management
+│   │   ├── layouts/      # Responsive layouts (Worker, Lender, Admin) with mobile drawers
+│   │   ├── pages/        # 18 Full SPA Pages
+│   │   └── services/     # Axios API client
+│   └── package.json
+├── backend/              # FastAPI REST API + SQLAlchemy ORM (Port 8001)
+│   ├── app/              # API v1 routes (13 endpoints), services, models, schemas
+│   ├── alembic/          # Database migrations
+│   └── tests/            # Pytest backend integration tests
+├── intelligence/         # Pandas & NumPy Analytics & Scoring Engine
+│   └── tests/            # Unit tests for scoring & verification
+├── docs/                 # Complete architecture, API & setup docs
+├── docker-compose.yml    # Containerized orchestration
+├── Brain.md              # System Architecture & Technical Memory
+├── README.md             # Master documentation
+└── run.bat               # 1-Click Application Launcher
 ```
 
 ---
 
-## 4. Environment Variables
+## ⚡ Quick Start
 
-### Frontend (`frontend/.env`)
-```env
-VITE_API_URL=http://localhost:8000
+### 1-Click Launch (Windows)
+Double-click [`run.bat`](file:///c:/Users/sandi/OneDrive/Desktop/SSIT/run.bat) at the root of the project to automatically start both backend and frontend servers:
+
+```cmd
+run.bat
 ```
 
-### Backend (`backend/.env`)
-```env
-DATABASE_URL=postgresql://username:password@host:5432/database
-SECRET_KEY=change-me-in-production
-FRONTEND_URL=http://localhost:5173
-```
+- **Backend API**: `http://localhost:8001` (Swagger docs: `http://localhost:8001/docs`)
+- **Frontend App**: `http://localhost:5173` (or `http://localhost:5174`)
 
 ---
 
-## 5. How to Run the Project
+### Manual Execution
 
-### Prerequisites
-- Node.js (v18+)
-- Python (v3.10+)
-
-### Backend Setup & Execution
-1. Navigate to the `backend/` directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a Python virtual environment:
-   ```bash
-   python -m venv .venv
-   # Windows PowerShell:
-   .venv\Scripts\Activate.ps1
-   # macOS/Linux:
-   source .venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Copy environment template:
-   ```bash
-   cp .env.example .env
-   ```
-5. Run the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-   * The API server will run at `http://localhost:8000`.
-   * Swagger documentation: `http://localhost:8000/docs`.
-
-### Frontend Setup & Execution
-1. Open a new terminal and navigate to the `frontend/` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install npm dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy environment template:
-   ```bash
-   cp .env.example .env
-   ```
-4. Run the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   * The React application will run at `http://localhost:5173`.
-
-### Optional Docker Compose Execution
+#### Terminal 1 — FastAPI Backend (Port 8001)
 ```bash
-docker-compose up --build
+cd credbridge/backend
+pip install -r requirements.txt
+alembic upgrade head
+python -m uvicorn app.main:app --port 8001 --reload
+```
+
+#### Terminal 2 — React Frontend
+```bash
+cd credbridge/frontend
+npm install
+npm run dev
+```
+
+#### Running the Full Test Suite
+```bash
+$env:PYTHONPATH="credbridge;credbridge/backend;."
+python -m pytest credbridge/backend/tests credbridge/intelligence/tests
 ```
 
 ---
 
-## 6. Current Development Status
+## 🔑 Pre-Seeded Demo Accounts
 
-- ✅ **Step 1 Complete**: Base repository structure created.
-- ✅ **Frontend Shell**: React 18, Vite, TypeScript, Tailwind CSS, and React Router configured.
-- ✅ **Backend Core**: FastAPI app with CORS middleware, root status endpoint (`GET /`), and health check (`GET /api/v1/health`).
-- ✅ **API Services**: Axios service layer connecting frontend to backend health check.
-- ✅ **Database Foundation**: SQLAlchemy engine and session initialization ready for PostgreSQL.
-- ✅ **Route Placeholders**: Routing prepared for Worker & Lender portals (`/login`, `/worker/*`, `/lender/*`).
+| Role | Email Address | Password | Quick Login Action |
+| :--- | :--- | :--- | :--- |
+| **Worker (Ravi Kumar)** | `ravi.worker@example.com` | `Password123!` | Click **"Worker Demo"** button on Login Page |
+| **Lender (Priya Sharma)** | `priya.lender@example.com` | `Password123!` | Click **"Lender Demo"** button on Login Page |
+| **Admin** | `admin@credbridge.com` | `Admin@123456` | Click **"Admin Seed"** button on Login Page |
 
 ---
 
-## 7. Future Planned Modules (`/api/v1/`)
+## 📄 Compliance & Disclaimer
 
-1. **Authentication (`/auth`)**: JWT auth, password hashing, RBAC.
-2. **Gig Worker Profiles (`/workers`)**: Profile management & platform linking.
-3. **Transaction Ingestion (`/transactions`)**: Bank & platform cashflow streams.
-4. **AA Verification (`/verification`)**: RBI Account Aggregator consent gateway integration.
-5. **Analytics Engine (`/analytics`)**: Cashflow stability, daily income velocity, volatility metrics.
-6. **Credit Passport (`/passport`)**: Standardized score, verification badge & exportable credentials.
-7. **Lender Assessment (`/lenders`)**: Institutional underwriter views & applicant review.
-8. **Loan Suggestion ('/referals')**: Easy finding of loans for gig workers and sustainable commission earning for the platform. 
+CredBridge is NOT a bank, lender, or official credit bureau (CIBIL/Experian). CredBridge does NOT approve or reject loans. All Financial Readiness Scores and What-If simulations are analytical evidence tools designed for lender decision support.

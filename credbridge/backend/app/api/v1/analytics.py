@@ -1,20 +1,18 @@
 """
-FastAPI Router for Financial Analytics Endpoints (Phase 2).
+FastAPI Router for Financial Analytics Endpoints.
 Exposes GET /api/v1/analytics/financial-summary for authenticated gig workers.
 """
 
 from typing import Optional
-from fastapi import APIRouter, Header, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status
+from sqlalchemy.orm import Session
+from app.db.session import get_db
+from app.api.deps import require_worker
+from app.models.worker_profile import WorkerProfile
 from intelligence.src.models.analytics_result import FinancialAnalyticsResult
 from app.services.analytics_service import get_worker_financial_summary
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
-
-
-@router.get("/")
-def analytics_index():
-    return {"module": "analytics", "status": "active"}
-
+router = APIRouter()
 
 @router.get(
     "/financial-summary",
@@ -25,16 +23,12 @@ def analytics_index():
 def get_financial_summary(
     start_date: Optional[str] = Query(default=None, description="Optional start date filter (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(default=None, description="Optional end date filter (YYYY-MM-DD)"),
-    x_worker_id: Optional[str] = Header(default="worker_gig_101", description="Authenticated Worker ID context header")
+    worker: WorkerProfile = Depends(require_worker),
+    db: Session = Depends(get_db)
 ):
-    if not x_worker_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication credentials missing or invalid"
-        )
-
     return get_worker_financial_summary(
-        worker_id=x_worker_id,
+        db,
+        worker_id=worker.id,
         start_date=start_date,
         end_date=end_date
     )

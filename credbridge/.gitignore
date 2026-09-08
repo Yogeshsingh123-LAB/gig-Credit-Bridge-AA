@@ -5,6 +5,11 @@ env/
 venv/
 ENV/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Python cache & artifacts
 __pycache__/
 *.py[cod]

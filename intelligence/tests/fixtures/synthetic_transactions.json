@@ -1,0 +1,200 @@
+[
+  {
+    "id": "tx_001",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-03-05",
+    "transaction_type": "CREDIT",
+    "amount": 4200.0,
+    "category": "GIG_INCOME",
+    "source": "Swiggy",
+    "description": "Weekly payout - Swiggy delivery",
+    "reference_id": "REF_20260305_SWIGGY_01"
+  },
+  {
+    "id": "tx_002",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-03-12",
+    "transaction_type": "CREDIT",
+    "amount": 5100.0,
+    "category": "GIG_INCOME",
+    "source": "Uber",
+    "description": "Rideshare payout - Uber",
+    "reference_id": "REF_20260312_UBER_01"
+  },
+  {
+    "id": "tx_003",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-03-15",
+    "transaction_type": "DEBIT",
+    "amount": 1200.0,
+    "category": "FUEL",
+    "source": "Petrol Pump",
+    "description": "Fuel refill",
+    "reference_id": "REF_20260315_PETROL_01"
+  },
+  {
+    "id": "tx_004",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-04-02",
+    "transaction_type": "CREDIT",
+    "amount": 6300.0,
+    "category": "GIG_INCOME",
+    "source": "Zomato",
+    "description": "Zomato payout week 1",
+    "reference_id": "REF_20260402_ZOMATO_01"
+  },
+  {
+    "id": "tx_005",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-04-18",
+    "transaction_type": "CREDIT",
+    "amount": 7200.0,
+    "category": "GIG_INCOME",
+    "source": "Swiggy",
+    "description": "Swiggy payout week 3",
+    "reference_id": "REF_20260418_SWIGGY_02"
+  },
+  {
+    "id": "tx_006",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-04-20",
+    "transaction_type": "DEBIT",
+    "amount": 2500.0,
+    "category": "MAINTENANCE",
+    "source": "Auto Repair",
+    "description": "Bike servicing",
+    "reference_id": "REF_20260420_MAINT_01"
+  },
+  {
+    "id": "tx_007",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-05-04",
+    "transaction_type": "CREDIT",
+    "amount": 8100.0,
+    "category": "GIG_INCOME",
+    "source": "Uber",
+    "description": "Uber payout May week 1",
+    "reference_id": "REF_20260504_UBER_02"
+  },
+  {
+    "id": "tx_008",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-05-19",
+    "transaction_type": "CREDIT",
+    "amount": 8900.0,
+    "category": "GIG_INCOME",
+    "source": "Urban Company",
+    "description": "Urban Company home services",
+    "reference_id": "REF_20260519_UC_01"
+  },
+  {
+    "id": "tx_009",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-06-01",
+    "transaction_type": "CREDIT",
+    "amount": 9500.0,
+    "category": "GIG_INCOME",
+    "source": "Swiggy",
+    "description": "Swiggy payout June week 1",
+    "reference_id": "REF_20260601_SWIGGY_03"
+  },
+  {
+    "id": "tx_010",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-06-15",
+    "transaction_type": "CREDIT",
+    "amount": 10200.0,
+    "category": "GIG_INCOME",
+    "source": "Uber",
+    "description": "Uber payout June week 2",
+    "reference_id": "REF_20260615_UBER_03"
+  },
+  {
+    "id": "tx_011",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-07-03",
+    "transaction_type": "CREDIT",
+    "amount": 11000.0,
+    "category": "GIG_INCOME",
+    "source": "Zomato",
+    "description": "Zomato payout July week 1",
+    "reference_id": "REF_20260703_ZOMATO_02"
+  },
+  {
+    "id": "tx_012",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-07-20",
+    "transaction_type": "CREDIT",
+    "amount": 11500.0,
+    "category": "GIG_INCOME",
+    "source": "Swiggy",
+    "description": "Swiggy payout July week 3",
+    "reference_id": "REF_20260720_SWIGGY_04"
+  },
+  {
+    "id": "tx_013",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-08-05",
+    "transaction_type": "CREDIT",
+    "amount": 12000.0,
+    "category": "GIG_INCOME",
+    "source": "Uber",
+    "description": "Uber payout August week 1",
+    "reference_id": "REF_20260805_UBER_04"
+  },
+  {
+    "id": "tx_014",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-08-18",
+    "transaction_type": "CREDIT",
+    "amount": 12800.0,
+    "category": "GIG_INCOME",
+    "source": "Urban Company",
+    "description": "Urban Company August payout",
+    "reference_id": "REF_20260818_UC_02"
+  },
+  {
+    "id": "tx_dup_01",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-08-18",
+    "transaction_type": "CREDIT",
+    "amount": 12800.0,
+    "category": "GIG_INCOME",
+    "source": "Urban Company",
+    "description": "Urban Company August payout",
+    "reference_id": "REF_20260818_UC_02"
+  },
+  {
+    "id": "tx_bad_01",
+    "worker_id": "worker_gig_101",
+    "transaction_date": null,
+    "transaction_type": "CREDIT",
+    "amount": 5000.0,
+    "category": "GIG_INCOME",
+    "source": "Swiggy",
+    "description": "Missing date transaction",
+    "reference_id": "REF_BAD_DATE_01"
+  },
+  {
+    "id": "tx_bad_02",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-08-25",
+    "transaction_type": "CREDIT",
+    "amount": -500.0,
+    "category": "GIG_INCOME",
+    "source": "Uber",
+    "description": "Negative amount test",
+    "reference_id": "REF_BAD_AMT_01"
+  },
+  {
+    "id": "tx_transfer_01",
+    "worker_id": "worker_gig_101",
+    "transaction_date": "2026-08-26",
+    "transaction_type": "CREDIT",
+    "amount": 15000.0,
+    "category": "TRANSFER",
+    "source": "Bank Transfer",
+    "description": "Personal transfer from friend",
+    "reference_id": "REF_TRANSFER_01"
+  }
+]

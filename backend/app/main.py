@@ -40,7 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global Exception Handlers
+# Global Exception Handlers (Clean foundation without leaking stack traces or secrets)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning(f"Validation error on {request.method} {request.url.path}")

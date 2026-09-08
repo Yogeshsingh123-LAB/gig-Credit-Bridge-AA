@@ -1,19 +1,77 @@
 import React from 'react';
-import { BarChart3 } from 'lucide-react';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { Table } from '../../components/ui/Table';
+import { Users, FileCheck2, Clock, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const LenderDashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const welcomeName = user?.name ? user.name : 'Assessor';
+
+  const lenderMetrics = [
+    { title: 'Total Applications', count: '0', icon: Users },
+    { title: 'Applicants', count: '0', icon: FileCheck2 },
+    { title: 'Pending Reviews', count: '0', icon: Clock },
+    { title: 'Verified Profiles', count: '0', icon: ShieldCheck },
+  ];
+
   return (
-    <div className="max-w-xl mx-auto py-12 px-6 bg-slate-900/60 border border-slate-800 rounded-2xl shadow-xl text-center space-y-4">
-      <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400">
-        <BarChart3 className="w-6 h-6" />
+    <div className="space-y-6">
+      <PageHeader
+        title={`Welcome back, ${welcomeName}`}
+        subtitle="Institutional portfolio metrics & gig worker applicant stream"
+      />
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {lenderMetrics.map((m) => {
+          const Icon = m.icon;
+          return (
+            <Card key={m.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardDescription>{m.title}</CardDescription>
+                <Icon className="w-4 h-4 text-indigo-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-100">{m.count}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-      <h2 className="text-2xl font-bold text-white">Lender Dashboard</h2>
-      <p className="text-xs text-slate-400">
-        Placeholder for institutional analytics, portfolio metrics, and risk assessment feeds.
-      </p>
-      <div className="p-3 bg-slate-950/80 rounded-lg text-xs font-mono text-slate-500">
-        Route: /lender/dashboard
-      </div>
+
+      {/* Recent Applicants Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Applicants</CardTitle>
+              <CardDescription>Verified gig worker profiles submitted for credit evaluation</CardDescription>
+            </div>
+            <Link to="/lender/applicant">
+              <Badge variant="info" className="hover:underline cursor-pointer">
+                View Detail Template
+              </Badge>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table
+            columns={[
+              { key: 'applicant', header: 'Applicant Name' },
+              { key: 'platform', header: 'Gig Category' },
+              { key: 'date', header: 'Submitted Date' },
+              { key: 'verification', header: 'Income Verification' },
+              { key: 'passport', header: 'Credit Passport' },
+            ]}
+            data={[]}
+            emptyMessage="No pending applicant reviews. Profiles will appear here when workers submit their Credit Passport."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -188,4 +188,5 @@ docker-compose up --build
 5. **Analytics Engine (`/analytics`)**: Cashflow stability, daily income velocity, volatility metrics.
 6. **Credit Passport (`/passport`)**: Standardized score, verification badge & exportable credentials.
 7. **Lender Assessment (`/lenders`)**: Institutional underwriter views & applicant review.
-8. **Loan Suggestion ('/referals')**: Easy finding of loans for gig workers and sustainable commission earning for the platform. 
+8. **Loan Suggestion ('/referals')**: Easy finding of loans for gig workers and sustainable commission earning for the platform.
+

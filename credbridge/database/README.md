@@ -1,51 +1,44 @@
-# CredBridge Database Architecture & Migration Roadmap
+# CredBridge Database Architecture & Schema
 
 ## Overview
 
-CredBridge uses **PostgreSQL** (compatible with local PostgreSQL, **Supabase**, and **Neon**) managed via **SQLAlchemy 2.x** and **Alembic** migrations.
+CredBridge uses **PostgreSQL** (with dynamic local **SQLite** fallback for rapid development) managed via **SQLAlchemy 2.0 ORM** and **Alembic** migrations.
 
 The database URL is configured via environment variable `DATABASE_URL`:
 ```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/credbridge
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/credbridge
 ```
+*If PostgreSQL is unavailable at launch, the backend seamlessly falls back to local SQLite without crashing.*
+
+---
+
+## Active Schema Entities
+
+1. **`users`**:
+   - `id`, `name`, `email`, `password_hash`, `role` (`WORKER`, `LENDER`, `ADMIN`), `identity_provider` (`DIGILOCKER`, `LOCAL`), `is_active`, `is_demo`.
+2. **`worker_profiles`**:
+   - `id`, `user_id`, `full_name`, `phone_number`, `city`, `occupation`, `aadhaar_masked`, `pan_masked`.
+3. **`lender_profiles`**:
+   - `id`, `user_id`, `organization_name`, `designation`.
+4. **`financial_accounts`**:
+   - `id`, `worker_id`, `bank_name`, `account_number`, `masked_account_number`, `account_type`, `is_primary`, `is_active`.
+5. **`income_reports`**:
+   - `id`, `report_id` (`CBR-2026-XXXXXXXX`), `worker_id`, `analysis_start_date`, `analysis_end_date`, `months_analyzed` (12), `total_verified_gig_income`, `verified_average_monthly_gig_income`, `consistency_score`, `accounts_analyzed` (JSON), `income_sources` (JSON), `monthly_breakdown` (JSON), `canonical_hash`, `signature`, `signature_algorithm`, `status` (`ACTIVE`, `REVOKED`), `issued_at`.
+6. **`aa_consents`**:
+   - `id`, `worker_id`, `consent_handle`, `fiu_id`, `status` (`ACTIVE`, `REVOKED`, `EXPIRED`), `accounts_covered` (JSON), `created_at`.
+7. **`report_shares`**:
+   - `id`, `report_id`, `worker_id`, `lender_id`, `status`, `expires_at`, `created_at`.
+8. **`audit_logs`**:
+   - `id`, `user_id`, `action`, `resource_type`, `resource_id`, `metadata` (JSON), `timestamp`.
 
 ---
 
 ## Migration Commands (Alembic)
 
-To autogenerate a migration revision after defining model changes:
 ```bash
-alembic revision --autogenerate -m "description of migration"
-```
+# Autogenerate migration revision
+alembic revision --autogenerate -m "migration description"
 
-To apply pending migrations to the database:
-```bash
+# Apply pending migrations
 alembic upgrade head
 ```
-
----
-
-## Database Module Roadmap (Planned / Future Phases)
-
-The following modules represent planned database entities for future phases. None of these business tables are created in Phase 1 foundation:
-
-1. **Users** `[Planned / Future Phase]`
-   - Core authentication identities, roles (Worker, Lender, Admin), hashed credentials, MFA settings.
-2. **Worker Profiles** `[Planned / Future Phase]`
-   - Worker demographics, gig platform links, primary payment details, consent records.
-3. **Lender Profiles** `[Planned / Future Phase]`
-   - Financial institution metadata, underwriting preferences, risk criteria.
-4. **Gig Platforms** `[Planned / Future Phase]`
-   - Linked platforms (Uber, Swiggy, Zomato, DoorDash, Upwork) and OAuth consent tokens.
-5. **Transactions** `[Planned / Future Phase]`
-   - Ingested bank statements, platform payout receipts, expense classifications.
-6. **Income Verifications** `[Planned / Future Phase]`
-   - Verification engine audit logs, payout-to-deposit matching metrics, fraud flags.
-7. **Financial Readiness Scores** `[Planned / Future Phase]`
-   - Computed cash flow stability, debt service coverage ratio (DSCR), volatility scores.
-8. **Credit Passports** `[Planned / Future Phase]`
-   - Verifiable credit passport certificates, cryptographic hashes, QR validation payloads.
-9. **Passport Shares** `[Planned / Future Phase]`
-   - Worker-controlled lender access tokens, share expiration timers, view counts.
-10. **Audit Logs** `[Planned / Future Phase]`
-    - Immutable access logs, consent grant/revoke audit trails, data inspection logs.

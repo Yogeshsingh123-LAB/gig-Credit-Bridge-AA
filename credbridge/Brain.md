@@ -1,18 +1,34 @@
-# 🧠 CredBridge System Architecture & Intelligence Memory (Brain.md)
+# 🧠 CredBridge System Architecture & Memory (Brain.md)
 
-> **Core Concept**: *"Turn gig income into trusted financial evidence."*  
-> CredBridge is NOT a bank, lender, or credit bureau. It is a deterministic financial analytics, income verification, and consent-driven evidence platform designed for gig workers (Uber, Swiggy, Zomato, Urban Company, Blinkit, Zepto, etc.).
+> **Core Purpose**: *"Turn gig income into trusted financial evidence."*  
+> CredBridge is an evidence verification monorepo platform that enables gig workers (Uber, Swiggy, Zomato, Urban Company, Blinkit, Zepto, etc.) to convert fragmented bank cashflow into standardized, tamper-evident **Verified Gig Income Reports**.
 
 ---
 
-## 1. System Philosophy & Non-Negotiable Rules
+## 1. System Invariants & Non-Negotiable Rules
 
-1. **No AI for Financial Numbers**: Financial calculations (income aggregations, expenses, net cashflow, volatility, readiness scores, simulations) are **100% deterministic** built using Pandas and NumPy.
-2. **AI Layer Scope**: The LLM API (if key present) is strictly an **explanation layer** for natural-language commentary on pre-calculated numbers. If the AI service fails or is offline, the system falls back to deterministic template commentary without crashing.
-3. **Terminology Compliance**:
-   - Never use "Official Credit Score" → Use **"CredBridge Financial Readiness Score"** (0–100).
-   - Never use "Loan Approved / Rejected" → Use **"Financial Evidence Support"** or **"Assessment Support"**.
-4. **Consent-Enforced Data Isolation**: Worker financial evidence is strictly private. Lenders cannot view any worker data unless an active, non-expired consent record is granted by the worker. Revocation immediately terminates access.
+1. **Deterministic Financial Math**:
+   - All income calculations, monthly aggregations, and consistency metrics are **100% deterministic**.
+   - No generative AI is used for financial calculations or numbers.
+2. **Single Source of Truth Snapshot**:
+   - The database record, frontend UI, and generated PDF report strictly consume the identical `FinalReportSnapshot` dataclass payload.
+3. **Strict Mathematical Reconciliation**:
+   - The `ReportValidator` enforces 3 core mathematical invariants before saving or generating reports:
+     $$\sum \text{Income Sources} = \text{Total Verified Income}$$
+     $$\sum 12 \text{ Monthly Breakdowns} = \text{Total Verified Income}$$
+     $$\text{Average Monthly Income} = \frac{\text{Total Verified Income}}{12}$$
+   - Any mathematical divergence raises an immediate validation failure.
+4. **Fixed 12-Month Calendar Window**:
+   - Analysis covers strictly the last 12 calendar months (`range(11, -1, -1)`).
+5. **Standardized Formatting**:
+   - **Currency**: Indian Rupee notation (`format_inr`, e.g., `₹2,57,100`).
+   - **Timestamp**: Authoritative Indian Standard Time (`DD MMM YYYY • HH:MM AM/PM IST`).
+6. **Regulatory Compliance & Terminology**:
+   - CredBridge is **NOT** a bank, NBFC, or credit bureau.
+   - Never use "Official Credit Score" → Use **"Verified Gig Income Report"** and **"Consistency Score"**.
+   - Never claim loan approval or guarantee credit.
+7. **User Report Privacy**:
+   - Technical strings (`Integrity: SHA-256 Protected (...)` and `Signature: Valid (...)`) are omitted from user reports and printouts, presenting a clean, user-friendly verification block with QR code, Report ID, and `Digitally Verifiable` status.
 
 ---
 
@@ -22,82 +38,85 @@
 SSIT / CredBridge Monorepo
 ├── backend/                  # FastAPI REST API (Port 8001)
 │   ├── app/
-│   │   ├── api/v1/          # 13 REST routers (/auth, /profile, /platforms, /transactions, /analytics, /verification, /score, /passport, /consent, /lenders, /admin, /health)
-│   │   ├── core/            # Config, Security (bcrypt + JWT), Logging
-│   │   ├── database/        # Engine & SessionLocal
-│   │   ├── models/          # 13 SQLAlchemy ORM Models
-│   │   ├── schemas/         # Pydantic v2 Request/Response Schemas
-│   │   └── services/        # Atomic Business Logic Services
-│   └── tests/               # Pytest backend integration tests
-├── intelligence/             # Deterministic Pandas/NumPy Engine
-│   └── src/
-│       ├── aggregations/    # Monthly/Categorical pandas aggregations
-│       ├── analytics/       # 0–100 Readiness Score & What-If Simulator
-│       ├── cleaning/        # Transaction normalization & quality assessment
-│       └── engines/         # Verification & AI explanation fallback engines
-├── frontend/                 # React 18 + Vite + TypeScript SPA (Port 5173 / 5174)
-│   └── src/
-│       ├── context/         # AuthContext JWT session management
-│       ├── layouts/         # Responsive layouts (Worker, Lender, Admin) with mobile drawers
-│       ├── pages/           # 18 Full SPA Pages
-│       └── services/        # Axios API client wrapper
-├── docs/                     # Architecture, API & Security Specifications
-└── run.bat                   # 1-Click Launch Script
+│   │   ├── api/v1/          # REST route handlers (/auth, /reports, /financial/accounts, etc.)
+│   │   ├── core/            # Security (JWT, bcrypt), logging, config
+│   │   ├── models/          # 13 SQLAlchemy ORM Models (User, WorkerProfile, IncomeReport, etc.)
+│   │   ├── services/        # report_validator, pdf_service, worker_workflow_service, crypto_service
+│   │   └── scripts/         # Mock data seeding & synthetic generator
+│   └── tests/               # 29 Pytest tests (including PDF snapshot regression test)
+├── frontend/                 # React 18 + Vite + TypeScript SPA (Port 5173)
+│   ├── src/
+│   │   ├── layouts/         # WorkerLayout, LenderLayout, AdminLayout, MainLayout
+│   │   ├── pages/           # Worker, Lender, and Admin application pages
+│   │   ├── services/        # Axios API client
+│   │   └── routes/          # Protected routing matrix
+│   └── package.json
+├── credbridge/               # Mirrored project directory
+├── docs/                     # System architecture, API, and demo guides
+├── docker-compose.yml        # Multi-container orchestration
+├── Brain.md                  # System architecture memory & core invariants
+└── README.md                 # Master repository guide
 ```
 
 ---
 
-## 3. Database Schema Blueprint (13 Models)
+## 3. Worker Portal Architecture
 
-1. **User**: `id`, `name`, `email` (unique, normalized), `password_hash` (bcrypt), `role` (`WORKER`, `LENDER`, `ADMIN`), `is_active`.
-2. **WorkerProfile**: `user_id`, `phone`, `city`, `occupation`, `experience_months`, `profile_completion`.
-3. **LenderProfile**: `user_id`, `organization_name`, `designation`.
-4. **GigPlatform**: `worker_id`, `platform_name` (Uber, Swiggy, etc.), `account_identifier`, `status`.
-5. **Transaction**: `worker_id`, `platform_id`, `amount`, `transaction_type` (`CREDIT`, `DEBIT`), `category` (`GIG_INCOME`, `FUEL`, `MAINTENANCE`, `LIVING`, etc.), `date`, `is_demo`.
-6. **IncomeVerification**: `worker_id`, `declared_monthly_income`, `verified_monthly_income`, `confidence_score`, `verification_status` (`VERIFIED`, `PARTIALLY_VERIFIED`, `INSUFFICIENT_DATA`, `REVIEW_REQUIRED`), `verified_at`.
-7. **FinancialScore**: `worker_id`, `overall_score` (0–100), `sub_scores` (json), `factors` (json), `calculated_at`.
-8. **CreditPassport**: `passport_number` (`CB-PASS-...`), `worker_id`, `verification_id`, `score_id`, `snapshot_data` (json), `generated_at`, `version`.
-9. **Consent**: `worker_id`, `lender_id`, `passport_id`, `status` (`ACTIVE`, `REVOKED`, `EXPIRED`), `granted_at`, `expires_at`, `revoked_at`.
-10. **AuditLog**: `user_id`, `action`, `resource_type`, `resource_id`, `metadata` (json), `timestamp`.
-11. **SystemSetting**: `key`, `value`, `updated_at`.
-12. **Notification**: `user_id`, `title`, `message`, `is_read`, `created_at`.
-13. **Enums**: `UserRole`, `TransactionType`, `TransactionCategory`, `VerificationStatus`, `ConsentStatus`.
+### 1. Navigation Matrix
+The worker portal navigation strictly contains 5 destinations:
+1. `Dashboard` (`/worker/dashboard`)
+2. `Generate Report` (`/worker/bank-accounts`)
+3. `Reports` (`/worker/reports`)
+4. `Profile` (`/worker/profile`)
+5. `Settings` (`/worker/settings`)
+6. `Logout`
+
+*Legacy consent routes (`/worker/consent`, `/worker/data-access`) are seamlessly redirected to `/worker/bank-accounts`.*
+
+### 2. Bank Account Selection & Master Toggle
+- Located at `/worker/bank-accounts`.
+- Prominent **"Choose All Banks"** master checkbox at top.
+- State is dynamically derived: `allSelected = (selectedAccounts.length === accounts.length && accounts.length > 0)`.
+- Selecting or deselecting individual accounts automatically updates the master toggle.
+
+### 3. Report Generation Workflow
+$$\text{Generate Report} \longrightarrow \text{Choose All Banks / Accounts} \longrightarrow \text{Analyze Income} \longrightarrow \text{Report Ready \& PDF Download}$$
 
 ---
 
-## 4. Financial Readiness Score Engine (0–100 Weighted Calculation)
+## 4. PDF Generation Specifications (Sections 29–34 Compliance)
 
-The overall Financial Readiness Score is calculated as:
-
-$$\text{Score} = \sum_{i=1}^6 W_i \times S_i$$
-
-| Component | Weight ($W_i$) | Description |
-| :--- | :---: | :--- |
-| **Income Consistency** | 25% | Monthly variance and cashflow regularity |
-| **Cashflow Stability** | 20% | Coefficient of variation in earnings |
-| **Evidence Coverage** | 20% | Months of active gig earnings relative to target (6+ months = 100%) |
-| **Data Quality Score** | 15% | Missing fields, timestamp gaps, and transaction completeness |
-| **Source Diversification** | 10% | Multi-platform earnings (e.g. Uber + Swiggy) |
-| **Expense Sustainability** | 10% | Net savings margin (Net Income / Total Income) |
+1. **Title**: Header explicitly renders `VERIFIED GIG INCOME REPORT` with subtitle `CRED BRIDGE`.
+2. **Typography**: Uses TrueType font detection (`TTFont`) registering system Arial / Segoe UI / DejaVuSans to natively display the Indian Rupee (`₹`) symbol.
+3. **Metadata Block**: Worker Name, Masked Aadhaar, Report ID, Analysis Period (Fixed 12 Months), Issued Date (IST), Verification Status.
+4. **Executive Summary**: 3 metric callout boxes for Total Verified Income, Average Monthly Income, and Consistency Score.
+5. **Verified Income Sources Table**: Itemized platform breakdown (Category, Transactions, Amount, Share %) plus a reconciled Total row.
+6. **12-Month Observed Breakdown Table**: All 12 calendar months itemized (Month, Transactions, Amount) plus a reconciled Total row.
+7. **Report Authenticity**: Verifiable QR code linking to verification portal (`/verify-report?id=...`), Report ID, and `Digitally Verifiable` badge.
+8. **NumberedCanvas Running Footer**: Two-pass page numbering:
+   `CredBridge | Verified Gig Income Report • Report ID: CBR-2026-XXXXXXXX • Page X of Y`
 
 ---
 
 ## 5. Security & Isolation Matrix
 
 - **Port Configuration**: Backend runs on `http://localhost:8001` (to prevent Windows port 8000 socket collisions).
-- **CORS Policy**: Dynamic origin regex `http://(localhost|127\.0\.0\.1)(:\d+)?` permitting Vite frontend on any port (`5173`, `5174`, `5175`).
-- **Authorization**:
-  - `Worker`: Can access only their own transactions, verification, scores, passports, and consent rules.
-  - `Lender`: Can view applicant passports ONLY when `Consent.status == ACTIVE` and `expires_at > NOW()`. Attempting access without active consent returns `403 Forbidden`.
-  - `Admin`: Accesses system audit logs and global metrics. Public registration for `ADMIN` is strictly blocked.
+- **CORS Policy**: Dynamic origin regex permitting Vite frontend on any port (`5173`, `5174`, `5175`).
+- **Authentication**:
+  - Workers authenticate via DigiLocker Demo Mode (passwordless JWT).
+  - Institutional Lenders and Admins authenticate via institutional credentials.
+  - Public registration is closed; all accounts are managed through verified channels.
+- **Data Isolation**: Workers can access only their own financial reports, accounts, and profile data.
 
 ---
 
-## 6. Verification & Test Suite Status
+## 6. Automated Testing Standards
 
-- **Backend & Intelligence Pytest Suite**: 45 / 45 passing tests (100% success rate).
-- **Frontend SPA Build**: `npm run build` completed with 0 compilation errors.
-- **Seeded Demo Accounts**:
-  - Worker: `ravi.worker@example.com` / `Password123!`
-  - Lender: `priya.lender@example.com` / `Password123!`
-  - Admin: `admin@credbridge.com` / `Admin@123456`
+- **Backend Pytest Suite**: 29 / 29 passing tests (100% success rate).
+- **PDF Regression Test**: `test_pdf_snapshot_regression.py` uses `pypdf.PdfReader` to extract and verify that:
+  - Exact title `VERIFIED GIG INCOME REPORT` is present.
+  - DB Total == Backend Total == PDF Total.
+  - DB Average == Backend Average == PDF Average.
+  - All 12 calendar months are present and reconciled.
+  - Authoritative IST timestamp is present.
+  - Technical hash strings (`SHA-256 Protected`, `Signature: Valid`) are omitted from user reports.

@@ -2,31 +2,40 @@
 
 > *"Turn gig income into trusted financial evidence."*
 
-CredBridge is a production-quality financial verification monorepo platform that helps gig workers (Uber, Swiggy, Zomato, Urban Company, Blinkit, Zepto, etc.) convert fragmented earnings into verified income evidence, financial analytics, an explainable **Financial Readiness Score (0–100)**, and consent-shared **Credit Passports** for lender decision support.
+CredBridge is a production-quality financial verification platform designed for gig economy workers (Uber, Swiggy, Zomato, Urban Company, Blinkit, Zepto, etc.). It converts fragmented digital earnings into standardized, mathematically reconciled **Verified Gig Income Reports**, financial analytics, and verifiable proof for lender underwriting support.
 
 ---
 
 ## 🚀 Key Features & Capabilities
 
-- **Consolidated Gig Earnings**: Integrates demo platform connections across Uber, Swiggy, Zomato, and Urban Company.
-- **Realistic Synthetic Data Generator**: Generates 6–12 months of realistic cashflow transactions labeled as "Demo Data".
-- **100% Deterministic Analytics Engine**: Calculates monthly income/expenses, volatility percentage, trend trajectory, and data quality score using Pandas and NumPy.
-- **Deterministic Income Verification**: Audits observed vs declared income, coverage percentage, and confidence score (`VERIFIED`, `PARTIALLY_VERIFIED`, `INSUFFICIENT_DATA`, `REVIEW_REQUIRED`).
-- **Explainable Financial Readiness Score (0–100)**: Evaluated across 6 weighted components (Consistency 25%, Stability 20%, Coverage 20%, Quality 15%, Diversification 10%, Sustainability 10%) with positive factors and attention areas.
-- **Credit Passport**: Versioned financial evidence document snapshotting verified metrics, data quality, and AI fact interpretation.
-- **Consent-Based Sharing**: Workers control who views their passport with time-bound active consent and immediate revocation (enforced with HTTP 403 Forbidden).
-- **Lender What-If Simulator**: Stress-tests applicant cashflow under hypothetical income/expense variations deterministically.
-- **Admin Portal & Security Audit Logs**: Tracks system health, user metrics, and security access logs.
-- **Responsive UI Across All Viewports**: Features mobile top header bars, hamburger buttons, and collapsible drawer overlays (tested across 320px–1920px).
+- **Passwordless DigiLocker Authentication**: Pre-configured Demo Mode featuring 10 realistic synthetic Indian gig worker profiles with verified KYC and transaction histories.
+- **Simplified Worker Portal**: Clean, focused interface with strictly 5 navigation destinations:
+  `Dashboard`, `Generate Report`, `Reports`, `Profile`, `Settings`, `Logout`.
+- **Master "Choose All Banks" Selector**: Dynamic multi-account selection with real-time derived state synchronization.
+- **Fixed 12-Month Calendar Analysis**: Analyzes exactly 12 calendar months of cashflow data, separating gig platform payouts from personal UPI transfers and operating expenses.
+- **Single Source of Truth & Mathematical Reconciliation**:
+  - $\sum \text{Verified Sources} = \text{Total Verified Income}$
+  - $\sum 12 \text{ Monthly Breakdowns} = \text{Total Verified Income}$
+  - $\text{Average Monthly Income} = \frac{\text{Total Verified Income}}{12}$
+  - Enforced server-side through `ReportValidator` prior to persistence and PDF rendering.
+- **Standardized Verified Gig Income Report (PDF)**:
+  - **Indian Currency Standards**: Formatted in Indian Rupee notation (`₹`, Lakhs, e.g. `₹2,57,100`).
+  - **Authoritative IST Timestamps**: Unified timestamping (`DD MMM YYYY • HH:MM AM/PM IST`).
+  - **TrueType Font Rendering**: Native typography avoiding standard PostScript glyph limitations.
+  - **Verified Income Sources & 12-Month Breakdown Tables**: Itemized tabular evidence with totals.
+  - **Report Authenticity**: Verifiable QR code, Report ID (`CBR-2026-XXXXXXXX`), and `Digitally Verifiable` issuer stamp.
+  - **NumberedCanvas Running Footer**: Two-pass footer (`CredBridge | Verified Gig Income Report • Report ID: CBR-2026-XXXXXXXX • Page X of Y`).
+- **Lender Portal & What-If Cashflow Simulator**: Allows financial institutions to stress-test applicant cashflow under hypothetical income/expense variations deterministically.
+- **Admin Audit Trail & Metrics**: Comprehensive system monitoring and immutable security audit logs.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts, React Router v6, Axios.
-- **Backend**: Python 3.11+, FastAPI, Uvicorn (Port 8001), SQLAlchemy 2.0 ORM, Pydantic v2, Alembic, PostgreSQL / SQLite.
-- **Intelligence**: Pandas, NumPy, Python score calculation engines.
-- **Testing**: Pytest (45 / 45 passing tests).
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, Recharts, React Router v6, Axios (Port 5173).
+- **Backend**: Python 3.11+, FastAPI, Uvicorn (Port 8001), SQLAlchemy 2.0 ORM, Pydantic v2, PostgreSQL / SQLite.
+- **PDF Engine**: ReportLab with TrueType font detection, NumberedCanvas, and dynamic QR generation.
+- **Testing**: Pytest automated test suite (29 / 29 passing tests).
 - **DevOps**: Docker, Docker Compose, 1-Click Launch Script (`run.bat`).
 
 ---
@@ -34,25 +43,26 @@ CredBridge is a production-quality financial verification monorepo platform that
 ## 📂 Monorepo Structure
 
 ```text
-credbridge/
-├── frontend/             # React 18 + Vite + TypeScript SPA
+SSIT / CredBridge Monorepo
+├── backend/                  # FastAPI REST API + SQLAlchemy ORM (Port 8001)
+│   ├── app/
+│   │   ├── api/v1/          # REST route handlers (/auth, /reports, /financial/accounts, etc.)
+│   │   ├── models/          # SQLAlchemy ORM Models (User, WorkerProfile, IncomeReport, etc.)
+│   │   ├── services/        # Business logic, PDF rendering & ReportValidator
+│   │   └── scripts/         # Mock data seeding & synthetic generator
+│   └── tests/               # Pytest suite with PDF snapshot regression tests
+├── frontend/                 # React 18 + Vite + TypeScript SPA (Port 5173)
 │   ├── src/
-│   │   ├── context/      # AuthContext JWT session management
-│   │   ├── layouts/      # Responsive layouts (Worker, Lender, Admin) with mobile drawers
-│   │   ├── pages/        # 18 Full SPA Pages
-│   │   └── services/     # Axios API client
+│   │   ├── layouts/         # WorkerLayout, LenderLayout, AdminLayout, MainLayout
+│   │   ├── pages/           # Worker, Lender, and Admin application pages
+│   │   ├── services/        # Axios API client
+│   │   └── routes/          # Protected routing matrix
 │   └── package.json
-├── backend/              # FastAPI REST API + SQLAlchemy ORM (Port 8001)
-│   ├── app/              # API v1 routes (13 endpoints), services, models, schemas
-│   ├── alembic/          # Database migrations
-│   └── tests/            # Pytest backend integration tests
-├── intelligence/         # Pandas & NumPy Analytics & Scoring Engine
-│   └── tests/            # Unit tests for scoring & verification
-├── docs/                 # Complete architecture, API & setup docs
-├── docker-compose.yml    # Containerized orchestration
-├── Brain.md              # System Architecture & Technical Memory
-├── README.md             # Master documentation
-└── run.bat               # 1-Click Application Launcher
+├── credbridge/               # Mirrored project directory
+├── docs/                     # System architecture, API, and demo guides
+├── docker-compose.yml        # Multi-container orchestration
+├── Brain.md                  # System architecture memory & core invariants
+└── README.md                 # Master repository guide
 ```
 
 ---
@@ -60,62 +70,77 @@ credbridge/
 ## ⚡ Quick Start
 
 ### 1-Click Launch (Windows)
-### 1-Click Launch (Windows)
-Double-click [`run.bat`](file:///c:/Users/sandi/OneDrive/Desktop/SSIT/run.bat) at the root of the project to select your preferred launch mode:
-- **Option [1]**: Local Launch (Python Uvicorn on port 8001 + Vite Dev Server on port 5173)
-- **Option [2]**: Docker Compose Launch (PostgreSQL + FastAPI + Vite Containers)
-- **Option [3]**: Full Automated Pytest Suite (45 Tests)
+Double-click `run.bat` at the root of the project to launch:
+- **Backend**: FastAPI on `http://localhost:8001`
+- **Frontend**: Vite on `http://localhost:5173`
 
 ```cmd
 run.bat
 ```
 
-### Docker Compose Launch
-Run all containerized services (PostgreSQL 15 + FastAPI Backend on 8001 + React Frontend on 5173):
-```cmd
-docker compose up --build
-```
+### Manual Launch
 
-- **Backend API**: `http://localhost:8001` (Swagger docs: `http://localhost:8001/docs`)
-- **Frontend App**: `http://localhost:5173`
-
----
-
-### Manual Execution
-
-#### Terminal 1 — FastAPI Backend (Port 8001)
+#### Terminal 1 — Backend (Port 8001)
 ```bash
-cd credbridge/backend
+cd backend
+python -m venv .venv
+.\.venv\Scripts\activate
 pip install -r requirements.txt
-alembic upgrade head
-python -m uvicorn app.main:app --port 8001 --reload
+uvicorn app.main:app --port 8001 --reload
 ```
+- API Docs (Swagger): `http://localhost:8001/docs`
+- Health Check: `http://localhost:8001/api/v1/health`
 
-#### Terminal 2 — React Frontend
+#### Terminal 2 — Frontend (Port 5173)
 ```bash
-cd credbridge/frontend
+cd frontend
 npm install
 npm run dev
 ```
+- Web Application: `http://localhost:5173`
 
-#### Running the Full Test Suite
+---
+
+## 🧪 Running Automated Tests
+
 ```bash
-$env:PYTHONPATH="credbridge;credbridge/backend;."
-python -m pytest credbridge/backend/tests credbridge/intelligence/tests
+cd backend
+$env:PYTHONPATH = ".;../credbridge"
+.\.venv\Scripts\python.exe -m pytest tests -v
 ```
+All 29 integration tests and regression tests pass, including:
+- PDF snapshot validation (`test_report_pdf_matches_snapshot`)
+- Mathematical reconciliation assertions
+- Authentication and role-based access controls
+- Bank account selection and report generation lifecycle
 
 ---
 
 ## 🔑 Pre-Seeded Demo Accounts
 
-| Role | Email Address | Password | Quick Login Action |
+### 1. Gig Workers (DigiLocker Demo Mode)
+Select any of the 10 pre-loaded identities directly from the `/login` screen:
+1. **Aarav Sharma** — Zomato Delivery Partner (Bengaluru)
+2. **Rajesh Patel** — Uber Driver (Mumbai)
+3. **Sunita Verma** — Swiggy Food Partner (Delhi NCR)
+4. **Vikram Singh** — Urban Company Home Salon Specialist (Hyderabad)
+5. **Sneha Kulkarni** — Zepto Last-Mile Associate (Pune)
+6. **Mohammed Rizwan** — Blinkit Store Picker / Dispatcher (Chennai)
+7. **Ananya Das** — Swiggy Instamart Rider (Kolkata)
+8. **Deepak Yadav** — Uber Auto Driver (Jaipur)
+9. **Pooja Nair** — Urban Company Appliance Repair Tech (Kochi)
+10. **Manoj Tiwari** — Zomato Delivery Associate (Ahmedabad)
+
+### 2. Institutional Access
+Click **"Lender / Institutional Access →"** on the `/login` screen:
+
+| Role | Email Address | Password | Quick Fill Action |
 | :--- | :--- | :--- | :--- |
-| **Worker (Ravi Kumar)** | `ravi.worker@example.com` | `Password123!` | Click **"Worker Demo"** button on Login Page |
-| **Lender (Priya Sharma)** | `priya.lender@example.com` | `Password123!` | Click **"Lender Demo"** button on Login Page |
-| **Admin** | `admin@credbridge.com` | `Admin@123456` | Click **"Admin Seed"** button on Login Page |
+| **Institutional Lender** | `priya.lender@example.com` | `Password123!` | Click **"Use Demo Lender"** |
+| **System Administrator** | `admin@credbridge.internal` | `AdminPassword123!` | Click **"Use Demo Admin"** |
 
 ---
 
-## 📄 Compliance & Disclaimer
+## 📄 Compliance & Regulatory Disclaimer
 
-CredBridge is NOT a bank, lender, or official credit bureau (CIBIL/Experian). CredBridge does NOT approve or reject loans. All Financial Readiness Scores and What-If simulations are analytical evidence tools designed for lender decision support.
+CredBridge is an independent financial evidence verification infrastructure and is **NOT** a bank, Non-Banking Financial Company (NBFC), or credit rating bureau (e.g., CIBIL, Experian, Equifax). CredBridge does **NOT** issue credit guarantees, underwrite loans, or approve/reject financing applications. All metrics and reports are deterministic analytical evidence tools provided for lender decision support.

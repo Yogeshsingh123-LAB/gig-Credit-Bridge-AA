@@ -90,15 +90,15 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       const role = await login(staffEmail.trim(), staffPassword);
-      if (role === 'LENDER') {
+      if (role === 'LENDER' || role === 'LENDER_ADMIN' || role === 'LENDER_OFFICER') {
         navigate('/lender/dashboard');
-      } else if (role === 'ADMIN') {
+      } else if (role === 'ADMIN' || role === 'PLATFORM_ADMIN') {
         navigate('/admin/dashboard');
       } else {
         navigate('/worker/dashboard');
       }
     } catch (err: any) {
-      const msg = err.response?.data?.detail || 'Staff sign-in failed. Check credentials.';
+      const msg = err.response?.data?.detail || (err.message === 'Network Error' ? 'Unable to connect to backend server at http://localhost:8001. Please ensure backend is running.' : err.message) || 'Staff sign-in failed. Check credentials.';
       setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
     } finally {
       setIsLoading(false);
@@ -241,22 +241,22 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setStaffEmail('priya.lender@example.com');
+                  setStaffEmail('lender-admin@demo-finance.local');
                   setStaffPassword('Password123!');
                 }}
-                className="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white"
+                className="flex-1 text-[11px] py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium border border-slate-700 transition-colors text-center"
               >
-                Use Demo Lender
+                Lender Account
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setStaffEmail('admin@credbridge.internal');
-                  setStaffPassword('AdminPassword123!');
+                  setStaffEmail('admin@credbridge.com');
+                  setStaffPassword('Admin@123456');
                 }}
-                className="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white"
+                className="flex-1 text-[11px] py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium border border-slate-700 transition-colors text-center"
               >
-                Use Demo Admin
+                Platform Admin
               </button>
             </div>
 

@@ -13,15 +13,50 @@ router = APIRouter(prefix="/admin", tags=["Platform Admin Portal"])
 
 class CreateOrganizationRequest(BaseModel):
     organization_name: str = Field(..., min_length=2, max_length=150)
+    organization_identifier: Optional[str] = Field(None, min_length=2, max_length=100)
     contact_email: Optional[str] = None
+    contact_person: Optional[str] = None
+    status: Optional[str] = Field("PENDING", description="PENDING, ACTIVE, SUSPENDED, DEACTIVATED")
     admin_name: Optional[str] = None
     admin_email: Optional[str] = None
     admin_password: Optional[str] = Field(None, min_length=8)
 
 
+class CreateLenderRequest(BaseModel):
+    organization_name: str = Field(..., min_length=2, max_length=150)
+    organization_identifier: Optional[str] = Field(None, min_length=2, max_length=100)
+    contact_email: Optional[str] = None
+    contact_person: Optional[str] = None
+    status: Optional[str] = Field("PENDING", description="PENDING, ACTIVE, SUSPENDED, DEACTIVATED")
+    admin_name: Optional[str] = None
+    admin_email: Optional[str] = None
+    admin_password: Optional[str] = Field(None, min_length=8)
+
 
 class UpdateOrgStatusRequest(BaseModel):
-    status: str = Field(..., description="ACTIVE, SUSPENDED, or INACTIVE")
+    status: str = Field(..., description="ACTIVE, PENDING, SUSPENDED, or DEACTIVATED")
+    organization_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_person: Optional[str] = None
+
+
+class UpdateLenderRequest(BaseModel):
+    status: Optional[str] = Field(None, description="ACTIVE, PENDING, SUSPENDED, or DEACTIVATED")
+    organization_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_person: Optional[str] = None
+
+
+class CreateLenderUserRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str
+    role: str = Field("LENDER_OFFICER", description="LENDER_ADMIN or LENDER_OFFICER")
+    designation: Optional[str] = None
+
+
+class UpdateLenderUserRequest(BaseModel):
+    status: Optional[str] = Field(None, description="INVITED, ACTIVE, SUSPENDED, DEACTIVATED")
+    role: Optional[str] = Field(None, description="LENDER_ADMIN or LENDER_OFFICER")
 
 
 class UpdateUserRequest(BaseModel):
@@ -40,16 +75,180 @@ def get_admin_dashboard(
     return admin_portal_service.get_admin_dashboard_metrics(db)
 
 
-@router.get("/organizations")
-def list_organizations(
-    search: Optional[str] = Query(None, description="Search by name, code, or email"),
+# =========================================================================
+# LENDER MANAGEMENT ROUTE SPECIFICATIONS
+# =========================================================================
+
+@router.get("/lenders/stats/summary")
+def get_lender_summary_stats(
     admin_user: User = Depends(require_platform_admin),
     db: Session = Depends(get_db)
 ):
     """
-    Lists all lender organizations registered on the platform.
+    Returns summary metrics (total, active, pending, suspended) for dashboard cards.
     """
-    return admin_portal_service.get_lender_organizations(db, search=search)
+    return admin_portal_service.get_lenders_summary_stats(db)
+
+
+@router.get("/lenders")
+def list_lenders(
+    search: Optional[str] = Query(None, description="Search by Name, Lender ID, Identifier, or Email"),
+    status: Optional[str] = Query(None, description="Filter by status (All, ACTIVE, PENDING, SUSPENDED, DEACTIVATED)"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sort_by: str = Query("created_at", description="created_at, organization_name, status, last_activity"),
+    sort_dir: str = Query("desc", description="asc or desc"),
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Lists registered lender organizations with search, filter, pagination, and sorting.
+    """
+    return admin_portal_service.get_lender_organizations(
+        db=db,
+        search=search,
+        status_filter=status,
+        page=page,
+        page_size=page_size,
+        sort_by=sort_by,
+        sort_dir=sort_dir
+    )
+
+
+@router.post("/lenders", status_code=status.HTTP_201_CREATED)
+def create_lender(
+    req: CreateLenderRequest,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Creates a new Lender Organization (Status defaults to PENDING).
+    Generates server-side unique LND-XXXXXXXX lender_id.
+    """
+    return admin_portal_service.create_lender_organization(
+        db=db,
+        organization_name=req.organization_name,
+        organization_identifier=req.organization_identifier,
+        contact_email=req.contact_email,
+        contact_person=req.contact_person,
+        status_val=req.status or "PENDING",
+        admin_name=req.admin_name,
+        admin_email=req.admin_email,
+        admin_password=req.admin_password,
+        admin_user=admin_user
+    )
+
+
+@router.get("/lenders/{lender_id}")
+def get_lender_detail(
+    lender_id: str,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns complete lender details, summary metrics, member users list, and verification history.
+    """
+    return admin_portal_service.get_lender_organization_detail(db, lender_id)
+
+
+@router.patch("/lenders/{lender_id}")
+def update_lender(
+    lender_id: str,
+    req: UpdateLenderRequest,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Updates lender organization status (ACTIVE, SUSPENDED, DEACTIVATED, PENDING) or contact info.
+    """
+    return admin_portal_service.update_organization_status(
+        db=db,
+        org_id=lender_id,
+        status_val=req.status,
+        organization_name=req.organization_name,
+        contact_email=req.contact_email,
+        contact_person=req.contact_person,
+        admin_user=admin_user
+    )
+
+
+@router.get("/lenders/{lender_id}/users")
+def get_lender_users(
+    lender_id: str,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Lists users belonging to a specific lender organization.
+    """
+    detail = admin_portal_service.get_lender_organization_detail(db, lender_id)
+    return {"members": detail["members"], "max_users": detail["max_users"]}
+
+
+@router.post("/lenders/{lender_id}/users", status_code=status.HTTP_201_CREATED)
+def create_lender_user(
+    lender_id: str,
+    req: CreateLenderUserRequest,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Creates/invites a new user (Lender Admin or Lender Officer) for the lender organization.
+    """
+    return admin_portal_service.create_lender_user_for_org(
+        db=db,
+        org_id=lender_id,
+        name=req.name,
+        email=req.email,
+        role=req.role,
+        designation=req.designation,
+        admin_user=admin_user
+    )
+
+
+@router.patch("/lenders/{lender_id}/users/{user_id}")
+def update_lender_user(
+    lender_id: str,
+    user_id: str,
+    req: UpdateLenderUserRequest,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Updates status (ACTIVE, SUSPENDED, DEACTIVATED) or role (LENDER_ADMIN, LENDER_OFFICER) of a lender user.
+    """
+    return admin_portal_service.update_lender_user_in_org(
+        db=db,
+        org_id=lender_id,
+        user_id=user_id,
+        status_val=req.status,
+        role_val=req.role,
+        admin_user=admin_user
+    )
+
+
+@router.get("/lenders/{lender_id}/verification-activity")
+def get_lender_verification_activity(
+    lender_id: str,
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns operational report verification activity logs for a specific lender organization.
+    """
+    detail = admin_portal_service.get_lender_organization_detail(db, lender_id)
+    return {"verifications": detail["recent_verifications"]}
+
+
+# Backward-compatibility Aliases for /organizations endpoints
+@router.get("/organizations")
+def list_organizations(
+    search: Optional[str] = Query(None),
+    admin_user: User = Depends(require_platform_admin),
+    db: Session = Depends(get_db)
+):
+    res = admin_portal_service.get_lender_organizations(db, search=search)
+    return res["items"] if isinstance(res, dict) and "items" in res else res
 
 
 @router.get("/organizations/{org_id}")
@@ -58,9 +257,6 @@ def get_organization_detail(
     admin_user: User = Depends(require_platform_admin),
     db: Session = Depends(get_db)
 ):
-    """
-    Returns full details, members, and verification stats for a lender organization.
-    """
     return admin_portal_service.get_lender_organization_detail(db, org_id)
 
 
@@ -70,13 +266,13 @@ def create_organization(
     admin_user: User = Depends(require_platform_admin),
     db: Session = Depends(get_db)
 ):
-    """
-    Registers a new lender organization and optionally provisions its primary Lender Admin.
-    """
     return admin_portal_service.create_lender_organization(
         db=db,
         organization_name=req.organization_name,
+        organization_identifier=req.organization_identifier,
         contact_email=req.contact_email,
+        contact_person=req.contact_person,
+        status_val=req.status or "PENDING",
         admin_name=req.admin_name,
         admin_email=req.admin_email,
         admin_password=req.admin_password,
@@ -91,15 +287,16 @@ def update_organization_status(
     admin_user: User = Depends(require_platform_admin),
     db: Session = Depends(get_db)
 ):
-    """
-    Updates organization status (ACTIVE, SUSPENDED, INACTIVE).
-    """
     return admin_portal_service.update_organization_status(
         db=db,
         org_id=org_id,
         status_val=req.status,
+        organization_name=req.organization_name,
+        contact_email=req.contact_email,
+        contact_person=req.contact_person,
         admin_user=admin_user
     )
+
 
 
 @router.get("/users")

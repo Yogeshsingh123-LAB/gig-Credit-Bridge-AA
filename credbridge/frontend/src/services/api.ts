@@ -8,9 +8,12 @@ import {
   FinancialRecommendationItem, ReportShareRecord, DataAccessAuditItem
 } from '../types';
 
-let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
 if (rawBaseUrl.includes(':8000')) {
   rawBaseUrl = rawBaseUrl.replace(':8000', ':8001');
+}
+if (rawBaseUrl.includes('localhost')) {
+  rawBaseUrl = rawBaseUrl.replace('localhost', '127.0.0.1');
 }
 const API_BASE_URL = rawBaseUrl;
 

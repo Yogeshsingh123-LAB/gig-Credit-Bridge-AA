@@ -62,7 +62,7 @@ class LenderProfileResponse(BaseModel):
 class UserResponse(BaseModel):
     id: str
     name: str
-    email: EmailStr
+    email: str
     role: UserRole
     is_active: bool
     worker_profile: Optional[WorkerProfileResponse] = None

@@ -3,6 +3,8 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, LogOut, ShieldCheck, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
 export const LenderLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -119,7 +121,9 @@ export const LenderLayout: React.FC = () => {
 
       {/* Main Workspace Area */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

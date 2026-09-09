@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, ShieldAlert, LogOut, ShieldCheck, Menu, X } from 'lucide-react';
+import {
+  LayoutDashboard, Building2, Users, FileText, CheckCircle2,
+  Activity, ShieldAlert, Settings, LogOut, ShieldCheck, Menu, X
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const mainNavItems = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/admin/users', label: 'User Directory', icon: Users },
-    { to: '/admin/audit-logs', label: 'Security Audit Logs', icon: ShieldAlert },
+    { to: '/admin/lenders', label: 'Lender Management', icon: Building2 },
+    { to: '/admin/users', label: 'Users', icon: Users },
+    { to: '/admin/reports', label: 'Reports', icon: FileText },
+    { to: '/admin/verifications', label: 'Verification Activity', icon: CheckCircle2 },
   ];
+
+  const systemNavItems = [
+    { to: '/admin/health', label: 'System', icon: Activity },
+    { to: '/admin/audit-logs', label: 'Audit Logs', icon: ShieldAlert },
+    { to: '/admin/settings', label: 'Settings', icon: Settings },
+  ];
+
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100 font-sans">
@@ -68,27 +81,55 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           {/* Nav Links */}
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 pl-2'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
+          <nav className="space-y-4">
+            <div className="space-y-1">
+              {mainNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 pl-2'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+
+            <div className="border-t border-slate-800/80 pt-3 space-y-1">
+              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                Platform System
+              </span>
+              {systemNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        isActive
+                          ? 'bg-indigo-600/20 text-indigo-400 border-l-4 border-indigo-500 pl-2'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
           </nav>
         </div>
 
@@ -120,7 +161,9 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Workspace Area */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

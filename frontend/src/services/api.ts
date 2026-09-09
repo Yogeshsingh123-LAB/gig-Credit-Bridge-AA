@@ -8,9 +8,12 @@ import {
   FinancialRecommendationItem, ReportShareRecord, DataAccessAuditItem
 } from '../types';
 
-let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
 if (rawBaseUrl.includes(':8000')) {
   rawBaseUrl = rawBaseUrl.replace(':8000', ':8001');
+}
+if (rawBaseUrl.includes('localhost')) {
+  rawBaseUrl = rawBaseUrl.replace('localhost', '127.0.0.1');
 }
 const API_BASE_URL = rawBaseUrl;
 
@@ -355,5 +358,73 @@ export const apiService = {
   getDataAccessAudit: async (): Promise<DataAccessAuditItem[]> => {
     const res = await apiClient.get<DataAccessAuditItem[]>('/api/v1/audit/data-access');
     return res.data;
+  },
+
+  // Admin Lender Management API Endpoints
+  getLendersSummaryStats: async (): Promise<import('../types').LenderSummaryStats> => {
+    const res = await apiClient.get<import('../types').LenderSummaryStats>('/api/v1/admin/lenders/stats/summary');
+    return res.data;
+  },
+  getLenders: async (params?: {
+    search?: string;
+    status?: string;
+    page?: number;
+    page_size?: number;
+    sort_by?: string;
+    sort_dir?: string;
+  }): Promise<import('../types').LenderOrganizationsResponse> => {
+    const res = await apiClient.get<import('../types').LenderOrganizationsResponse>('/api/v1/admin/lenders', { params });
+    return res.data;
+  },
+  createLender: async (data: {
+    organization_name: string;
+    organization_identifier?: string;
+    contact_email?: string;
+    contact_person?: string;
+    status?: string;
+    admin_name?: string;
+    admin_email?: string;
+    admin_password?: string;
+  }): Promise<import('../types').LenderOrganizationItem> => {
+    const res = await apiClient.post<import('../types').LenderOrganizationItem>('/api/v1/admin/lenders', data);
+    return res.data;
+  },
+  getLenderDetail: async (lenderId: string): Promise<import('../types').LenderDetailResponse> => {
+    const res = await apiClient.get<import('../types').LenderDetailResponse>(`/api/v1/admin/lenders/${lenderId}`);
+    return res.data;
+  },
+  updateLenderStatus: async (lenderId: string, data: {
+    status?: string;
+    organization_name?: string;
+    contact_email?: string;
+    contact_person?: string;
+  }) => {
+    const res = await apiClient.patch(`/api/v1/admin/lenders/${lenderId}`, data);
+    return res.data;
+  },
+  getLenderUsers: async (lenderId: string) => {
+    const res = await apiClient.get(`/api/v1/admin/lenders/${lenderId}/users`);
+    return res.data;
+  },
+  createLenderUser: async (lenderId: string, data: {
+    name: string;
+    email: string;
+    role: string;
+    designation?: string;
+  }) => {
+    const res = await apiClient.post(`/api/v1/admin/lenders/${lenderId}/users`, data);
+    return res.data;
+  },
+  updateLenderUser: async (lenderId: string, userId: string, data: {
+    status?: string;
+    role?: string;
+  }) => {
+    const res = await apiClient.patch(`/api/v1/admin/lenders/${lenderId}/users/${userId}`, data);
+    return res.data;
+  },
+  getLenderVerificationActivity: async (lenderId: string) => {
+    const res = await apiClient.get(`/api/v1/admin/lenders/${lenderId}/verification-activity`);
+    return res.data;
   }
 };
+

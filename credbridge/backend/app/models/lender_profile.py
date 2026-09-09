@@ -28,6 +28,8 @@ class LenderProfile(Base):
         index=True
     )
     status: Mapped[str] = mapped_column(String(50), default="ACTIVE", nullable=False)
+    invitation_token: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    invitation_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
@@ -47,4 +49,3 @@ class LenderProfile(Base):
         "LenderOrganization", 
         back_populates="members"
     )
-

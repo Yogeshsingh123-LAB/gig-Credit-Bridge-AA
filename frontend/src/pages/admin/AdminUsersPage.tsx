@@ -11,9 +11,18 @@ export const AdminUsersPage: React.FC = () => {
     setIsLoading(true);
     try {
       const data = await apiService.getAdminUsers(roleFilter || undefined);
-      setUsers(data);
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else if (data && Array.isArray(data.items)) {
+        setUsers(data.items);
+      } else if (data && Array.isArray(data.users)) {
+        setUsers(data.users);
+      } else {
+        setUsers([]);
+      }
     } catch (err) {
       console.error('Failed to load users:', err);
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
@@ -22,6 +31,8 @@ export const AdminUsersPage: React.FC = () => {
   useEffect(() => {
     loadUsers();
   }, [roleFilter]);
+
+  const userList = Array.isArray(users) ? users : [];
 
   return (
     <div className="space-y-6">
@@ -46,6 +57,8 @@ export const AdminUsersPage: React.FC = () => {
       <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
         {isLoading ? (
           <div className="py-12 text-center text-slate-400">Loading user directory...</div>
+        ) : userList.length === 0 ? (
+          <div className="py-12 text-center text-slate-400">No users found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-300">
@@ -59,7 +72,7 @@ export const AdminUsersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {users.map((u) => (
+                {userList.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 font-bold text-white">{u.name}</td>
                     <td className="px-6 py-4 text-xs text-slate-300">{u.email}</td>

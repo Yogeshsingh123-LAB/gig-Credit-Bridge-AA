@@ -26,6 +26,8 @@ import { LenderSimulatorPage } from '../pages/lender/LenderSimulatorPage';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
+import { AdminLendersPage } from '../pages/admin/AdminLendersPage';
+import { AdminLenderDetailPage } from '../pages/admin/AdminLenderDetailPage';
 
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types';
@@ -41,10 +43,20 @@ const ProtectedRoute: React.FC<{ allowedRole: UserRole; children: React.ReactNod
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== allowedRole) {
+  const isRoleAllowed = (userRole: UserRole, targetRole: UserRole): boolean => {
+    if (targetRole === 'ADMIN') {
+      return userRole === 'ADMIN' || userRole === 'PLATFORM_ADMIN';
+    }
+    if (targetRole === 'LENDER') {
+      return userRole === 'LENDER' || userRole === 'LENDER_ADMIN' || userRole === 'LENDER_OFFICER';
+    }
+    return userRole === targetRole;
+  };
+
+  if (!isRoleAllowed(user.role, allowedRole)) {
     if (user.role === 'WORKER') return <Navigate to="/worker/dashboard" replace />;
-    if (user.role === 'LENDER') return <Navigate to="/lender/dashboard" replace />;
-    if (user.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+    if (user.role === 'LENDER' || user.role === 'LENDER_ADMIN' || user.role === 'LENDER_OFFICER') return <Navigate to="/lender/dashboard" replace />;
+    if (user.role === 'ADMIN' || user.role === 'PLATFORM_ADMIN') return <Navigate to="/admin/dashboard" replace />;
     return <Navigate to="/" replace />;
   }
 
@@ -123,11 +135,18 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="lenders" element={<AdminLendersPage />} />
+        <Route path="lenders/:lenderId" element={<AdminLenderDetailPage />} />
         <Route path="users" element={<AdminUsersPage />} />
+        <Route path="reports" element={<AdminUsersPage />} />
+        <Route path="verifications" element={<AdminUsersPage />} />
+        <Route path="health" element={<AdminUsersPage />} />
         <Route path="audit-logs" element={<AdminAuditLogsPage />} />
+        <Route path="settings" element={<AdminDashboardPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
+

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
 export const WorkerLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -132,7 +134,9 @@ export const WorkerLayout: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto bg-slate-950 p-4 sm:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </main>
     </div>

@@ -32,6 +32,7 @@ def seed_demo_accounts(db: Session):
             )
             db.add(admin)
         else:
+            admin.password_hash = hash_password("Admin@123456")
             admin.role = UserRole.PLATFORM_ADMIN
             admin.is_active = True
 
@@ -84,6 +85,7 @@ def seed_demo_accounts(db: Session):
             )
             db.add(lp)
         else:
+            u.password_hash = hash_password("Password123!")
             u.role = u_def["role"]
             u.is_active = True
             if u.lender_profile:
@@ -139,6 +141,7 @@ def seed_demo_accounts(db: Session):
             )
             db.add(lp)
         else:
+            u.password_hash = hash_password("Password123!")
             u.role = u_def["role"]
             u.is_active = True
             if u.lender_profile:
@@ -173,6 +176,9 @@ def seed_demo_accounts(db: Session):
             generate_demo_financial_data(db, wp.id, months=6)
         except Exception:
             pass
+    else:
+        worker_user.password_hash = hash_password("Password123!")
+        worker_user.is_active = True
 
     # 5. Legacy Lender Seed
     lender_user = db.query(User).filter(User.email == "priya.lender@example.com").first()
@@ -193,6 +199,9 @@ def seed_demo_accounts(db: Session):
             designation="Senior Credit Assessor"
         )
         db.add(lp)
+    else:
+        lender_user.password_hash = hash_password("Password123!")
+        lender_user.is_active = True
 
     db.commit()
 

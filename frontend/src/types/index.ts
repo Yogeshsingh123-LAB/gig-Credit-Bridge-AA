@@ -1,4 +1,4 @@
-export type UserRole = 'WORKER' | 'LENDER' | 'ADMIN';
+export type UserRole = 'WORKER' | 'LENDER' | 'ADMIN' | 'PLATFORM_ADMIN' | 'LENDER_ADMIN' | 'LENDER_OFFICER';
 
 export interface User {
   id: string;
@@ -380,3 +380,90 @@ export interface DataAccessAuditItem {
   details: any;
   status: string;
 }
+
+export interface LenderOrganizationItem {
+  id: string;
+  lender_id: string;
+  organization_name: string;
+  organization_identifier: string;
+  contact_email: string;
+  contact_person: string;
+  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+  user_count: number;
+  reports_verified: number;
+  is_demo?: boolean;
+  created_at: string;
+  created_at_iso?: string;
+  last_activity: string;
+  last_activity_iso?: string;
+}
+
+export interface LenderSummaryStats {
+  total_lenders: number;
+  active_lenders: number;
+  pending_lenders: number;
+  suspended_lenders: number;
+  deactivated_lenders: number;
+}
+
+export interface LenderOrganizationsResponse {
+  summary: LenderSummaryStats;
+  total: number;
+  page: number;
+  page_size: number;
+  items: LenderOrganizationItem[];
+}
+
+export interface LenderUserItem {
+  user_id: string;
+  profile_id?: string;
+  name: string;
+  email: string;
+  role: 'LENDER_ADMIN' | 'LENDER_OFFICER';
+  designation?: string;
+  status: 'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+  is_active: boolean;
+  created_at?: string;
+  last_login_at?: string;
+}
+
+export interface LenderVerificationItem {
+  id: string;
+  timestamp: string;
+  timestamp_iso?: string;
+  report_id: string;
+  lender_user: string;
+  verification_result: string;
+  integrity_valid: boolean;
+  signature_valid: boolean;
+  failure_reason?: string;
+}
+
+export interface LenderDetailResponse {
+  id: string;
+  lender_id: string;
+  organization_name: string;
+  organization_identifier: string;
+  contact_email: string;
+  contact_person: string;
+  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+  max_users: number;
+  is_demo: boolean;
+  created_at: string;
+  created_at_iso?: string;
+  activated_at?: string;
+  deactivated_at?: string;
+  suspended_at?: string;
+  last_activity: string;
+  last_activity_iso?: string;
+  summary_cards: {
+    total_users: number;
+    active_users: number;
+    reports_verified: number;
+    verification_requests: number;
+    last_activity: string;
+  };
+  members: LenderUserItem[];
+  recent_verifications: LenderVerificationItem[];
+}
+

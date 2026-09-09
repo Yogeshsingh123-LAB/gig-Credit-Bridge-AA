@@ -11,16 +11,27 @@ export const AdminAuditLogsPage: React.FC = () => {
     const loadLogs = async () => {
       setIsLoading(true);
       try {
-        const data = await apiService.getAdminAuditLogs();
-        setLogs(data);
+        const data: any = await apiService.getAdminAuditLogs();
+        if (Array.isArray(data)) {
+          setLogs(data);
+        } else if (data && Array.isArray(data.items)) {
+          setLogs(data.items);
+        } else if (data && Array.isArray(data.logs)) {
+          setLogs(data.logs);
+        } else {
+          setLogs([]);
+        }
       } catch (err) {
         console.error('Failed to load audit logs:', err);
+        setLogs([]);
       } finally {
         setIsLoading(false);
       }
     };
     loadLogs();
   }, []);
+
+  const logsList = Array.isArray(logs) ? logs : [];
 
   return (
     <div className="space-y-6">
@@ -30,14 +41,14 @@ export const AdminAuditLogsPage: React.FC = () => {
           <p className="text-sm text-slate-400">Immutable audit record of authentication, data access, and consent changes</p>
         </div>
         <span className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-indigo-400 border border-slate-700">
-          Total Logs: {logs.length}
+          Total Logs: {logsList.length}
         </span>
       </div>
 
       <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
         {isLoading ? (
           <div className="py-12 text-center text-slate-400">Loading audit logs...</div>
-        ) : logs.length === 0 ? (
+        ) : logsList.length === 0 ? (
           <div className="py-12 text-center text-slate-400">No audit logs recorded yet.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -52,7 +63,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
-                {logs.map((log) => (
+                {logsList.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-slate-400">
                       {new Date(log.created_at).toLocaleString('en-IN')}

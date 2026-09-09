@@ -8,14 +8,21 @@ import {
   FinancialRecommendationItem, ReportShareRecord, DataAccessAuditItem
 } from '../types';
 
-let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
-if (rawBaseUrl.includes(':8000')) {
-  rawBaseUrl = rawBaseUrl.replace(':8000', ':8001');
-}
-if (rawBaseUrl.includes('localhost')) {
-  rawBaseUrl = rawBaseUrl.replace('localhost', '127.0.0.1');
-}
-const API_BASE_URL = rawBaseUrl;
+const getApiBaseUrl = () => {
+  let envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  if (envUrl) {
+    envUrl = envUrl.replace(/["';]/g, '').trim();
+    if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
+      envUrl = `http://${envUrl}`;
+    }
+    return envUrl.replace(':8000', ':8001');
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    return `http://${window.location.hostname}:8001`;
+  }
+  return 'http://localhost:8001';
+};
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

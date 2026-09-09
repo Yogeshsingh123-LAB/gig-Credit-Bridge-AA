@@ -8,6 +8,10 @@ import { AdminLayout } from '../layouts/AdminLayout';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { VerifyReportPage } from '../pages/VerifyReportPage';
+import { AboutPage } from '../pages/AboutPage';
+import { ForLendersPage } from '../pages/ForLendersPage';
+import { FaqsPage } from '../pages/FaqsPage';
+import { HowItWorksPage } from '../pages/HowItWorksPage';
 
 import { WorkerDashboardPage } from '../pages/worker/WorkerDashboardPage';
 import { WorkerGenerateReportPage } from '../pages/worker/WorkerGenerateReportPage';
@@ -26,26 +30,39 @@ import { LenderSimulatorPage } from '../pages/lender/LenderSimulatorPage';
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
+import { AdminLendersPage } from '../pages/admin/AdminLendersPage';
+import { AdminLenderDetailPage } from '../pages/admin/AdminLenderDetailPage';
+import { AdminSystemHealthPage } from '../pages/admin/AdminSystemHealthPage';
+import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage';
 
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types';
 
 const ProtectedRoute: React.FC<{ allowedRole: UserRole; children: React.ReactNode }> = ({ allowedRole, children }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, switchRoleDemo } = useAuth();
 
   if (isLoading) {
     return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Verifying session...</div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    switchRoleDemo(allowedRole);
+    return null;
   }
 
-  if (user.role !== allowedRole) {
-    if (user.role === 'WORKER') return <Navigate to="/worker/dashboard" replace />;
-    if (user.role === 'LENDER') return <Navigate to="/lender/dashboard" replace />;
-    if (user.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
-    return <Navigate to="/" replace />;
+  const isRoleAllowed = (userRole: UserRole, targetRole: UserRole): boolean => {
+    if (targetRole === 'ADMIN') {
+      return userRole === 'ADMIN' || userRole === 'PLATFORM_ADMIN';
+    }
+    if (targetRole === 'LENDER') {
+      return userRole === 'LENDER' || userRole === 'LENDER_ADMIN' || userRole === 'LENDER_OFFICER';
+    }
+    return userRole === targetRole;
+  };
+
+  if (!isRoleAllowed(user.role, allowedRole)) {
+    switchRoleDemo(allowedRole);
+    return null;
   }
 
   return <>{children}</>;
@@ -57,6 +74,10 @@ export const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="how-it-works" element={<HowItWorksPage />} />
+        <Route path="for-lenders" element={<ForLendersPage />} />
+        <Route path="faqs" element={<FaqsPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<Navigate to="/login" replace />} />
         <Route path="signup" element={<Navigate to="/login" replace />} />
@@ -123,11 +144,18 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="lenders" element={<AdminLendersPage />} />
+        <Route path="lenders/:lenderId" element={<AdminLenderDetailPage />} />
         <Route path="users" element={<AdminUsersPage />} />
+        <Route path="reports" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="verifications" element={<AdminUsersPage />} />
+        <Route path="health" element={<AdminSystemHealthPage />} />
         <Route path="audit-logs" element={<AdminAuditLogsPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
+
